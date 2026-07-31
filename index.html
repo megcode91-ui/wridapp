@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق وِرد - النسخة 8.1 (مع الإضافة السريعة)</title>
+    <title>تطبيق وِرد - التسجيل بالبريد والرمز السرّي</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,19 +23,65 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center text-white px-4">
-        <div class="text-center space-y-6 max-w-sm w-full">
-            <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-6xl"></i>
-            <div>
-                <h1 class="text-4xl font-black mb-2">وِرد</h1>
-                <p class="text-slate-300 text-sm">نظام مراتب ودرجات خلوة الذكر</p>
+    <!-- شاشة تسجيل الدخول / إنشاء حساب -->
+    <div id="auth-screen" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center text-white px-4">
+        <div class="bg-slate-800 border border-slate-700 p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full space-y-6">
+            
+            <!-- الهيدر واللوجو -->
+            <div class="text-center space-y-2">
+                <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-5xl"></i>
+                <h1 class="text-3xl font-black">تطبيق وِرد</h1>
+                <p class="text-slate-400 text-xs">نظام مراتب ودرجات خلوة الذكر</p>
             </div>
-            <button id="google-login-btn" class="w-full bg-white text-slate-800 font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-100 transition shadow-lg">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
-                تسجيل الدخول باستخدام جوجل
-            </button>
-            <p id="auth-loading" class="text-emerald-400 text-sm hidden">جاري التحقق...</p>
+
+            <!-- تبويب الاختيار (تسجيل دخول / حساب جديد) -->
+            <div class="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-700/50">
+                <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-xl transition bg-emerald-600 text-white shadow">
+                    تسجيل الدخول
+                </button>
+                <button id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white">
+                    إنشاء حساب جديد
+                </button>
+            </div>
+
+            <!-- نموذج التسجيل والورود -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                
+                <!-- حقل الاسم (يظهر فقط في حساب جديد) -->
+                <div id="name-field-group" class="hidden space-y-1">
+                    <label class="text-xs font-semibold text-slate-300">الاسم الكريم:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute right-3 top-3 text-slate-500 text-sm"></i>
+                        <input type="text" id="auth-name" placeholder="أدخل اسمك" class="w-full bg-slate-900/90 border border-slate-700 text-white text-xs rounded-xl pr-9 pl-3 py-2.5 focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+                </div>
+
+                <!-- حقل البريد الإلكتروني -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-300">البريد الإلكتروني:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute right-3 top-3 text-slate-500 text-sm"></i>
+                        <input type="email" id="auth-email" required placeholder="example@mail.com" class="w-full bg-slate-900/90 border border-slate-700 text-white text-xs rounded-xl pr-9 pl-3 py-2.5 focus:outline-none focus:border-emerald-500 transition dir-ltr text-right">
+                    </div>
+                </div>
+
+                <!-- حقل القن السري / كلمة المرور -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-300">القن السري (كلمة المرور):</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute right-3 top-3 text-slate-500 text-sm"></i>
+                        <input type="password" id="auth-password" required minlength="6" placeholder="••••••••" class="w-full bg-slate-900/90 border border-slate-700 text-white text-xs rounded-xl pr-9 pl-3 py-2.5 focus:outline-none focus:border-emerald-500 transition dir-ltr text-right">
+                    </div>
+                </div>
+
+                <!-- رسالة الخطأ -->
+                <div id="auth-error-msg" class="hidden text-rose-400 text-xs text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-xl"></div>
+
+                <!-- زر الإرسال -->
+                <button type="submit" id="auth-submit-btn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl transition shadow-lg active:scale-95 text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> <span id="auth-btn-text">تسجيل الدخول</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -43,12 +89,14 @@
     <header id="main-header" class="hidden bg-gradient-to-r from-emerald-900 via-teal-800 to-slate-900 text-white shadow-md p-4 sticky top-0 z-40">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <img id="user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-emerald-500/50 object-cover shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-emerald-700/60 border border-emerald-400/40 flex items-center justify-center text-lg font-bold shadow-sm">
+                    <i class="fa-solid fa-user-check text-emerald-300"></i>
+                </div>
                 <div>
                     <h1 class="text-lg font-black tracking-wide flex items-center gap-1">
                         وِرد <span class="text-[10px] bg-emerald-600/80 px-2 py-0.5 rounded-full font-normal">سحابي</span>
                     </h1>
-                    <p id="user-name" class="text-xs text-emerald-200/80 mt-0.5 truncate max-w-[120px]">جاري التحميل...</p>
+                    <p id="user-name" class="text-xs text-emerald-200/80 mt-0.5 truncate max-w-[140px]">جاري التحميل...</p>
                 </div>
             </div>
             <div class="text-left flex flex-col items-end gap-1.5">
@@ -92,7 +140,7 @@
             </div>
         </section>
 
-        <!-- 2. خاصية إضافة مدة جاهزة (خارج التطبيق) - جديد 🌟 -->
+        <!-- 2. إضافة مدة جاهزة (خارج التطبيق) -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-emerald-200 space-y-3">
             <div class="flex items-center justify-between border-b pb-2 border-slate-100">
                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -130,7 +178,7 @@
             </div>
         </section>
 
-        <!-- 3. قسم مُؤقّت خلوة الذكر (Pomodoro) -->
+        <!-- 3. مؤقت خلوة الذكر (Pomodoro) -->
         <section class="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-5 border border-emerald-700/30">
             <div class="flex justify-between items-center border-b border-emerald-700/50 pb-3">
                 <h2 class="font-extrabold text-base flex items-center gap-2 text-emerald-200">
@@ -222,14 +270,14 @@
 
     </main>
 
-    <!-- عنصر الإشعار السريع (Toast Notification) -->
-    <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition transform translate-y-20 opacity-0 pointer-events-none z-50">
+    <!-- Toast Notification -->
+    <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition transform translate-y-20 opacity-0 pointer-events-none z-50">
         <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
         <span id="toast-text">تمت الإضافة بنجاح</span>
     </div>
 
     <footer id="main-footer" class="hidden text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white mt-6">
-        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Firebase Auth Enabled)
+        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Email Auth Enabled)
     </footer>
 
     <!-- Firebase SDKs -->
@@ -237,7 +285,14 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            updateProfile, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -255,13 +310,13 @@
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
 
         let currentUser = null;
         let unsubscribeSnapshot = null;
         let pomodoroLogs = [];
+        let authMode = 'login'; // 'login' or 'register'
 
-        // متغيرات مؤقت Pomodoro
+        // Pomodoro State
         let pomoDurationMinutes = 15;
         let pomoTimeLeftSeconds = 15 * 60;
         let pomoTimerInterval = null;
@@ -280,14 +335,68 @@
             { key: 'aalim', title: 'العالِم', minMin: 1440, maxMin: Infinity, desc: 'دوام متصل (القلب لا يغفل حتى في النوم)', icon: 'fa-crown', color: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-300' }
         ];
 
-        // 1. نظام تسجيل الدخول
-        document.getElementById('google-login-btn').addEventListener('click', () => {
-            document.getElementById('auth-loading').classList.remove('hidden');
-            signInWithPopup(auth, provider).catch((error) => {
-                console.error("Login Error:", error);
-                document.getElementById('auth-loading').innerText = "حدث خطأ أثناء تسجيل الدخول.";
-            });
-        });
+        // 1. نظام التبديل والتسجيل بالبريد وكلمة السر
+        window.switchAuthTab = function(mode) {
+            authMode = mode;
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const nameGroup = document.getElementById('name-field-group');
+            const submitText = document.getElementById('auth-btn-text');
+            const errorMsg = document.getElementById('auth-error-msg');
+
+            errorMsg.classList.add('hidden');
+
+            if (mode === 'login') {
+                loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-xl transition bg-emerald-600 text-white shadow";
+                regBtn.className = "flex-1 py-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white";
+                nameGroup.classList.add('hidden');
+                submitText.innerText = "تسجيل الدخول";
+            } else {
+                regBtn.className = "flex-1 py-2 text-xs font-bold rounded-xl transition bg-emerald-600 text-white shadow";
+                loginBtn.className = "flex-1 py-2 text-xs font-bold rounded-xl transition text-slate-400 hover:text-white";
+                nameGroup.classList.remove('hidden');
+                submitText.innerText = "إنشاء حساب جديد";
+            }
+        };
+
+        window.handleAuthSubmit = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const name = document.getElementById('auth-name').value;
+            const errorMsg = document.getElementById('auth-error-msg');
+            const submitBtn = document.getElementById('auth-submit-btn');
+
+            errorMsg.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+
+            try {
+                if (authMode === 'register') {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    if (name.trim() !== '') {
+                        await updateProfile(userCredential.user, { displayName: name });
+                    }
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                errorMsg.classList.remove('hidden');
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMsg.innerText = "البريد الإلكتروني أو القن السري غير صحيح.";
+                } else if (error.code === 'auth/email-already-in-use') {
+                    errorMsg.innerText = "هذا البريد الإلكتروني مستخدم بالفعل.";
+                } else if (error.code === 'auth/weak-password') {
+                    errorMsg.innerText = "يجب أن يتكون القن السري من 6 أحرف/أرقام على الأقل.";
+                } else {
+                    errorMsg.innerText = "حدث خطأ أثناء الاتصال، يرجى المحاولة لاحقاً.";
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        };
 
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.reload());
@@ -296,22 +405,20 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
                 document.getElementById('main-footer').classList.remove('hidden');
                 
-                document.getElementById('user-name').innerText = user.displayName;
-                document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/40';
+                document.getElementById('user-name').innerText = user.displayName || user.email;
 
                 initClocks();
                 syncWithFirestore(user.uid);
             } else {
-                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('main-header').classList.add('hidden');
                 document.getElementById('main-app').classList.add('hidden');
                 document.getElementById('main-footer').classList.add('hidden');
-                document.getElementById('auth-loading').classList.add('hidden');
             }
         });
 
@@ -349,7 +456,7 @@
             }
         }
 
-        // 3. الإضافة السريعة وإشارات التنبيه (Toast)
+        // 3. الإضافة السريعة وإشارات التنبيه
         window.quickLogExternal = function(minutes) {
             saveSessionToCloud(minutes);
             showToast(`تمت إضافة ${formatDuration(minutes)} إلى حصيلتك اليومية بنجاح 🌿`);
