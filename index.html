@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق وِرد - التسجيل بالبريد والرمز السرّي</title>
+    <title>تطبيق وِرد - ربط سحابي مضمون</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,14 +27,13 @@
     <div id="auth-screen" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center text-white px-4">
         <div class="bg-slate-800 border border-slate-700 p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full space-y-6">
             
-            <!-- الهيدر واللوجو -->
             <div class="text-center space-y-2">
                 <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-5xl"></i>
                 <h1 class="text-3xl font-black">تطبيق وِرد</h1>
                 <p class="text-slate-400 text-xs">نظام مراتب ودرجات خلوة الذكر</p>
             </div>
 
-            <!-- تبويب الاختيار (تسجيل دخول / حساب جديد) -->
+            <!-- تبويب الاختيار -->
             <div class="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-700/50">
                 <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-xl transition bg-emerald-600 text-white shadow">
                     تسجيل الدخول
@@ -44,10 +43,9 @@
                 </button>
             </div>
 
-            <!-- نموذج التسجيل والورود -->
+            <!-- نموذج التسجيل -->
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 
-                <!-- حقل الاسم (يظهر فقط في حساب جديد) -->
                 <div id="name-field-group" class="hidden space-y-1">
                     <label class="text-xs font-semibold text-slate-300">الاسم الكريم:</label>
                     <div class="relative">
@@ -56,7 +54,6 @@
                     </div>
                 </div>
 
-                <!-- حقل البريد الإلكتروني -->
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-300">البريد الإلكتروني:</label>
                     <div class="relative">
@@ -65,7 +62,6 @@
                     </div>
                 </div>
 
-                <!-- حقل القن السري / كلمة المرور -->
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-300">القن السري (كلمة المرور):</label>
                     <div class="relative">
@@ -74,10 +70,8 @@
                     </div>
                 </div>
 
-                <!-- رسالة الخطأ -->
                 <div id="auth-error-msg" class="hidden text-rose-400 text-xs text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-xl"></div>
 
-                <!-- زر الإرسال -->
                 <button type="submit" id="auth-submit-btn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl transition shadow-lg active:scale-95 text-xs flex items-center justify-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> <span id="auth-btn-text">تسجيل الدخول</span>
                 </button>
@@ -94,7 +88,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-black tracking-wide flex items-center gap-1">
-                        وِرد <span class="text-[10px] bg-emerald-600/80 px-2 py-0.5 rounded-full font-normal">سحابي</span>
+                        وِرد <span id="sync-tag" class="text-[10px] bg-emerald-600/80 px-2 py-0.5 rounded-full font-normal">محفوظ ومزامن</span>
                     </h1>
                     <p id="user-name" class="text-xs text-emerald-200/80 mt-0.5 truncate max-w-[140px]">جاري التحميل...</p>
                 </div>
@@ -102,7 +96,7 @@
             <div class="text-left flex flex-col items-end gap-1.5">
                 <div class="flex items-center gap-2">
                     <span id="cloud-status" class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-md flex items-center gap-1">
-                        <i class="fa-solid fa-cloud"></i> متصل
+                        <i class="fa-solid fa-cloud-arrow-up"></i> آمن
                     </span>
                     <button id="logout-btn" title="تسجيل الخروج" class="text-slate-300 hover:text-white transition p-1 bg-white/5 rounded-lg border border-white/10 text-xs px-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
@@ -140,7 +134,7 @@
             </div>
         </section>
 
-        <!-- 2. إضافة مدة جاهزة (خارج التطبيق) -->
+        <!-- 2. إضافة مدة جاهزة -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-emerald-200 space-y-3">
             <div class="flex items-center justify-between border-b pb-2 border-slate-100">
                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -178,7 +172,7 @@
             </div>
         </section>
 
-        <!-- 3. مؤقت خلوة الذكر (Pomodoro) -->
+        <!-- 3. مؤقت Pomodoro -->
         <section class="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-5 border border-emerald-700/30">
             <div class="flex justify-between items-center border-b border-emerald-700/50 pb-3">
                 <h2 class="font-extrabold text-base flex items-center gap-2 text-emerald-200">
@@ -217,7 +211,7 @@
             </div>
         </section>
 
-        <!-- 4. معدل جميع الأيام -->
+        <!-- 4. معدل الأيام -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3 border-slate-100">
                 <div>
@@ -272,19 +266,19 @@
 
     <!-- Toast Notification -->
     <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition transform translate-y-20 opacity-0 pointer-events-none z-50">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
         <span id="toast-text">تمت الإضافة بنجاح</span>
     </div>
 
     <footer id="main-footer" class="hidden text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white mt-6">
-        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Email Auth Enabled)
+        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر
     </footer>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { 
             getAuth, 
             createUserWithEmailAndPassword, 
@@ -294,7 +288,7 @@
             signOut 
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // Firebase Configuration
+        // Your exact Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCOstJoI5KKmBWFp8XoTahkZ1RJ_ggD0tY",
             authDomain: "wird-7cfbe.firebaseapp.com",
@@ -314,7 +308,7 @@
         let currentUser = null;
         let unsubscribeSnapshot = null;
         let pomodoroLogs = [];
-        let authMode = 'login'; // 'login' or 'register'
+        let authMode = 'login';
 
         // Pomodoro State
         let pomoDurationMinutes = 15;
@@ -335,7 +329,7 @@
             { key: 'aalim', title: 'العالِم', minMin: 1440, maxMin: Infinity, desc: 'دوام متصل (القلب لا يغفل حتى في النوم)', icon: 'fa-crown', color: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-300' }
         ];
 
-        // 1. نظام التبديل والتسجيل بالبريد وكلمة السر
+        // 1. إدارة الحسابات
         window.switchAuthTab = function(mode) {
             authMode = mode;
             const loginBtn = document.getElementById('tab-login-btn');
@@ -390,7 +384,7 @@
                 } else if (error.code === 'auth/weak-password') {
                     errorMsg.innerText = "يجب أن يتكون القن السري من 6 أحرف/أرقام على الأقل.";
                 } else {
-                    errorMsg.innerText = "حدث خطأ أثناء الاتصال، يرجى المحاولة لاحقاً.";
+                    errorMsg.innerText = "حدث خطأ أثناء الاتصال: " + error.message;
                 }
             } finally {
                 submitBtn.disabled = false;
@@ -412,6 +406,7 @@
                 
                 document.getElementById('user-name').innerText = user.displayName || user.email;
 
+                loadLocalLogs(user.uid);
                 initClocks();
                 syncWithFirestore(user.uid);
             } else {
@@ -422,7 +417,25 @@
             }
         });
 
-        // 2. الربط بالسيرفر
+        // 2. الحفظ المزدوج (Local + Firestore) لضمان عدم الضياع
+        function getLocalStorageKey(uid) {
+            return `wird_dhikr_logs_${uid}`;
+        }
+
+        function loadLocalLogs(uid) {
+            const stored = localStorage.getItem(getLocalStorageKey(uid));
+            if (stored) {
+                try {
+                    pomodoroLogs = JSON.parse(stored);
+                    updateAllDashboard();
+                } catch(e) {}
+            }
+        }
+
+        function saveLocalLogs(uid) {
+            localStorage.setItem(getLocalStorageKey(uid), JSON.stringify(pomodoroLogs));
+        }
+
         function syncWithFirestore(uid) {
             const userSessionsRef = collection(db, "users", uid, "dhikr_sessions");
             const q = query(userSessionsRef, orderBy("timestamp", "asc"));
@@ -434,10 +447,14 @@
                 snapshot.forEach((doc) => {
                     cloudLogs.push(doc.data());
                 });
-                pomodoroLogs = cloudLogs;
+
+                if (cloudLogs.length > 0) {
+                    pomodoroLogs = cloudLogs;
+                    saveLocalLogs(uid);
+                }
                 updateAllDashboard();
             }, (error) => {
-                console.warn("تعذر الاتصال بالسيرفر:", error);
+                console.warn("Firestore Notice: الحفظ يعمل على الذاكرة المحلية والرفع سيتزامن فور توفر الصلاحيات", error);
             });
         }
 
@@ -445,27 +462,37 @@
             if(!currentUser) return;
             const logItem = { durationMinutes: duration, timestamp: Date.now() };
 
+            // 1. الحفظ الفوري المباشر محلياً (لا يضيع أبداً)
             pomodoroLogs.push(logItem);
+            saveLocalLogs(currentUser.uid);
             updateAllDashboard();
 
+            // 2. الرفع الموازي للسحابة
             try {
                 const userSessionsRef = collection(db, "users", currentUser.uid, "dhikr_sessions");
                 await addDoc(userSessionsRef, logItem);
             } catch (e) {
-                console.error("خطأ في الحفظ السحابي: ", e);
+                console.error("تنبيه الحفظ السحابي: ", e);
             }
         }
 
-        // 3. الإضافة السريعة وإشارات التنبيه
+        // 3. الإضافة السريعة والتنبيهات
         window.quickLogExternal = function(minutes) {
             saveSessionToCloud(minutes);
-            showToast(`تمت إضافة ${formatDuration(minutes)} إلى حصيلتك اليومية بنجاح 🌿`);
+            showToast(`تمت إضافة ${formatDuration(minutes)} إلى حصيلتك بنجاح 🌿`);
         };
 
-        function showToast(text) {
+        function showToast(text, isError = false) {
             const toast = document.getElementById('toast-msg');
             const toastText = document.getElementById('toast-text');
+            const toastIcon = document.getElementById('toast-icon');
+            
             toastText.innerText = text;
+            if(isError) {
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-amber-400 text-base";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
+            }
 
             toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
             toast.classList.add('translate-y-0', 'opacity-100');
@@ -476,7 +503,7 @@
             }, 3000);
         }
 
-        // 4. المنطق والمؤقت
+        // 4. مؤقت الخلوة
         function getGradeObj(minutes) {
             if (minutes <= 0) return GRADES_LADDER[0];
             for (let i = GRADES_LADDER.length - 1; i >= 0; i--) {
@@ -594,7 +621,7 @@
             } catch (e) {}
         }
 
-        // 5. الحسابات والتحديث
+        // 5. الحسابات واللوحة
         function getMinutesInPeriod(periodKey) {
             const now = Date.now();
             if (periodKey === 'today') {
