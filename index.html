@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق وِرد - النسخة 8 (مع تسجيل الدخول)</title>
+    <title>تطبيق وِرد - النسخة 8.1 (مع الإضافة السريعة)</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +23,7 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- شاشة تسجيل الدخول (تظهر قبل الدخول) -->
+    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center text-white px-4">
         <div class="text-center space-y-6 max-w-sm w-full">
             <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-6xl"></i>
@@ -68,7 +68,7 @@
     <!-- Main Content -->
     <main id="main-app" class="hidden max-w-2xl mx-auto w-full p-4 flex-1 space-y-6">
 
-        <!-- 1. بطاقة حصيلة اليوم عند الساعة 23:00 -->
+        <!-- 1. بطاقة حصيلة اليوم -->
         <section class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-2 border-emerald-500/30 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
             <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
                 <div class="flex items-center gap-2">
@@ -83,9 +83,7 @@
             <div class="flex items-center justify-between pt-1">
                 <div>
                     <span class="text-xs text-slate-500 block mb-0.5">درجة اليوم الحالية:</span>
-                    <h3 id="today-grade-title" class="text-2xl font-black text-emerald-800 flex items-center gap-2">
-                        <!-- اسم الدرجة اليومية -->
-                    </h3>
+                    <h3 id="today-grade-title" class="text-2xl font-black text-emerald-800 flex items-center gap-2"></h3>
                     <p id="today-grade-desc" class="text-xs text-slate-600 mt-1">مجموع خلوة الذكر اليوم: <span id="today-total-time" class="font-bold text-slate-800">0 دقيقة</span></p>
                 </div>
                 <div id="today-grade-badge" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner bg-slate-100 text-slate-400">
@@ -94,11 +92,49 @@
             </div>
         </section>
 
-        <!-- 2. قسم مُؤقّت خلوة الذكر (Pomodoro Dhikr) -->
+        <!-- 2. خاصية إضافة مدة جاهزة (خارج التطبيق) - جديد 🌟 -->
+        <section class="bg-white rounded-3xl p-5 shadow-sm border border-emerald-200 space-y-3">
+            <div class="flex items-center justify-between border-b pb-2 border-slate-100">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-amber-500"></i> إضافة مدة جاهزة (ذكر خارج التطبيق)
+                </h3>
+                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">تسجيل سريع</span>
+            </div>
+            <p class="text-xs text-slate-500">اختر المدة التي قضيتها في الذكر خارج التطبيق لإضافتها فوراً لحصيلتك:</p>
+            
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
+                <button onclick="window.quickLogExternal(15)" class="py-2.5 px-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-2xl font-bold text-xs transition flex flex-col items-center gap-1 active:scale-95">
+                    <span class="text-sm font-black">+15</span>
+                    <span class="text-[10px] font-normal">دقيقة</span>
+                </button>
+                <button onclick="window.quickLogExternal(30)" class="py-2.5 px-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-2xl font-bold text-xs transition flex flex-col items-center gap-1 active:scale-95">
+                    <span class="text-sm font-black">+30</span>
+                    <span class="text-[10px] font-normal">دقيقة</span>
+                </button>
+                <button onclick="window.quickLogExternal(45)" class="py-2.5 px-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-2xl font-bold text-xs transition flex flex-col items-center gap-1 active:scale-95">
+                    <span class="text-sm font-black">+45</span>
+                    <span class="text-[10px] font-normal">دقيقة</span>
+                </button>
+                <button onclick="window.quickLogExternal(60)" class="py-2.5 px-2 bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 rounded-2xl font-bold text-xs transition flex flex-col items-center gap-1 active:scale-95">
+                    <span class="text-sm font-black">+1</span>
+                    <span class="text-[10px] font-normal">ساعة</span>
+                </button>
+                <button onclick="window.quickLogExternal(120)" class="py-2.5 px-2 bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 rounded-2xl font-bold text-xs transition flex flex-col items-center gap-1 active:scale-95">
+                    <span class="text-sm font-black">+2</span>
+                    <span class="text-[10px] font-normal">ساعتان</span>
+                </button>
+                <button onclick="window.promptManualLog()" class="py-2.5 px-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-2xl font-bold text-xs transition flex flex-col items-center justify-center gap-1 active:scale-95">
+                    <i class="fa-solid fa-pen"></i>
+                    <span class="text-[10px]">مخصص</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. قسم مُؤقّت خلوة الذكر (Pomodoro) -->
         <section class="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-5 border border-emerald-700/30">
             <div class="flex justify-between items-center border-b border-emerald-700/50 pb-3">
                 <h2 class="font-extrabold text-base flex items-center gap-2 text-emerald-200">
-                    <i class="fa-solid fa-hourglass-half text-emerald-400"></i> خلوة الذكر (Pomodoro)
+                    <i class="fa-solid fa-hourglass-half text-emerald-400"></i> خلوة الذكر بالعداد (Pomodoro)
                 </h2>
                 <span id="pomo-status-tag" class="text-xs bg-emerald-800/80 text-emerald-200 px-3 py-1 rounded-full border border-emerald-600/40">
                     جاهز للبدء
@@ -130,13 +166,10 @@
                 <button onclick="window.resetPomodoro()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-2xl transition">
                     <i class="fa-solid fa-rotate-right"></i> إعادة ضبط
                 </button>
-                <button onclick="window.promptManualLog()" title="تسجيل خلوة سابقة يدوياً" class="bg-white/10 hover:bg-white/20 text-emerald-300 font-bold px-3 py-2.5 rounded-2xl transition">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
             </div>
         </section>
 
-        <!-- 3. معدل جميع الأيام -->
+        <!-- 4. معدل جميع الأيام -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3 border-slate-100">
                 <div>
@@ -178,7 +211,7 @@
             </div>
         </section>
 
-        <!-- 4. سلم المراتب -->
+        <!-- 5. سلم المراتب -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-3">
             <h3 class="font-extrabold text-slate-800 text-sm flex items-center gap-2 border-b pb-3 border-slate-100">
                 <i class="fa-solid fa-layer-group text-amber-600"></i> سلم مراتب ودرجات الذكر
@@ -189,6 +222,12 @@
 
     </main>
 
+    <!-- عنصر الإشعار السريع (Toast Notification) -->
+    <div id="toast-msg" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition transform translate-y-20 opacity-0 pointer-events-none z-50">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toast-text">تمت الإضافة بنجاح</span>
+    </div>
+
     <footer id="main-footer" class="hidden text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white mt-6">
         تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Firebase Auth Enabled)
     </footer>
@@ -197,7 +236,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // Firebase Configuration
@@ -241,7 +280,7 @@
             { key: 'aalim', title: 'العالِم', minMin: 1440, maxMin: Infinity, desc: 'دوام متصل (القلب لا يغفل حتى في النوم)', icon: 'fa-crown', color: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-300' }
         ];
 
-        // 1. نظام تسجيل الدخول (Authentication)
+        // 1. نظام تسجيل الدخول
         document.getElementById('google-login-btn').addEventListener('click', () => {
             document.getElementById('auth-loading').classList.remove('hidden');
             signInWithPopup(auth, provider).catch((error) => {
@@ -251,9 +290,7 @@
         });
 
         document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.reload();
-            });
+            signOut(auth).then(() => window.location.reload());
         });
 
         onAuthStateChanged(auth, (user) => {
@@ -278,7 +315,7 @@
             }
         });
 
-        // 2. الربط بالسيرفر (مربوط بحساب المستخدم)
+        // 2. الربط بالسيرفر
         function syncWithFirestore(uid) {
             const userSessionsRef = collection(db, "users", uid, "dhikr_sessions");
             const q = query(userSessionsRef, orderBy("timestamp", "asc"));
@@ -312,7 +349,27 @@
             }
         }
 
-        // 3. المنطق والمؤقت
+        // 3. الإضافة السريعة وإشارات التنبيه (Toast)
+        window.quickLogExternal = function(minutes) {
+            saveSessionToCloud(minutes);
+            showToast(`تمت إضافة ${formatDuration(minutes)} إلى حصيلتك اليومية بنجاح 🌿`);
+        };
+
+        function showToast(text) {
+            const toast = document.getElementById('toast-msg');
+            const toastText = document.getElementById('toast-text');
+            toastText.innerText = text;
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // 4. المنطق والمؤقت
         function getGradeObj(minutes) {
             if (minutes <= 0) return GRADES_LADDER[0];
             for (let i = GRADES_LADDER.length - 1; i >= 0; i--) {
@@ -367,7 +424,7 @@
             if (custom && !isNaN(custom) && parseInt(custom) > 0) {
                 const mins = parseInt(custom);
                 saveSessionToCloud(mins);
-                alert(`تم تسجيل ${mins} دقيقة خلوة بنجاح.`);
+                showToast(`تم تسجيل ${formatDuration(mins)} بنجاح 🎉`);
             }
         };
 
@@ -414,7 +471,7 @@
             isPomoRunning = false;
             saveSessionToCloud(pomoDurationMinutes);
             playCompletionBeep();
-            alert(`تقبل الله! أتممت خلوة ذكر لمدة ${pomoDurationMinutes} دقيقة 🎉`);
+            showToast(`تقبل الله! أتممت خلوة ذكر لمدة ${formatDuration(pomoDurationMinutes)} 🎉`);
             window.resetPomodoro();
         }
 
@@ -430,7 +487,7 @@
             } catch (e) {}
         }
 
-        // 4. الحسابات والتحديث
+        // 5. الحسابات والتحديث
         function getMinutesInPeriod(periodKey) {
             const now = Date.now();
             if (periodKey === 'today') {
