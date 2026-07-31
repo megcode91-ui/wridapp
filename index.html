@@ -11,10 +11,11 @@
     <!-- الخط العربي (Tajawal) -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Compat Version لسهولة الاستخدام في ملف واحد) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
 
     <style>
         body {
@@ -59,7 +60,7 @@
                     <div class="text-[10px] text-emerald-300">محمد</div>
                 </div>
                 
-                <span class="bg-emerald-700/80 text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                <span id="syncBadge" class="bg-emerald-700/80 text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                     محفوظ ومزامَن
                 </span>
 
@@ -155,8 +156,33 @@
 
     <!-- JavaScript Logic -->
     <script>
-        let db = null;
+        // --- 1. إعدادات Firebase الخاصة بمشروعك (wird-7cfbe) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOstJoI5KKmBWFp8XoTahkZ1RJ_ggD0tY",
+            authDomain: "wird-7cfbe.firebaseapp.com",
+            projectId: "wird-7cfbe",
+            storageBucket: "wird-7cfbe.firebasestorage.app",
+            messagingSenderId: "1037841919563",
+            appId: "1:1037841919563:web:98f2fcf039f3e7796967ce",
+            measurementId: "G-NTQBWC1WLW"
+        };
 
+        // تهيئة السحابة والقواعد البيانات
+        let db = null;
+        let analytics = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            analytics = firebase.analytics();
+            console.log("تم الاتصال بـ Firebase بنجاح 🔥");
+        } catch (e) {
+            console.warn("تعذر تهيئة Firebase السحابية، سيعمل التطبيق محلياً:", e);
+        }
+
+        // --- 2. بيانات مراتب الذكر ---
         const TIERS_DATA = [
             { id: 'gafil', name: 'الغافل', range: '0 دقيقة', minMins: 0, maxMins: 0, icon: '🌙' },
             { id: 'mustayqiz', name: 'المستيقظ', range: '1 إلى 10 دقائق', minMins: 1, maxMins: 10, icon: '☀️' },
@@ -169,11 +195,12 @@
             { id: 'baqi', name: 'الباقي', range: 'كل ساعات اليقظة', minMins: 960, maxMins: 99999, icon: '♾️' }
         ];
 
-        let totalMinutesToday = 95;
+        let totalMinutesToday = 0;
         let isTimerRunning = false;
         let timerSeconds = 0;
         let timerInterval = null;
 
+        // --- 3. البدء عند فتح التطبيق ---
         window.addEventListener('DOMContentLoaded', () => {
             loadSavedData();
             startClock();
@@ -188,27 +215,49 @@
             }, 1000);
         }
 
-        function loadSavedData() {
+        // تحميل البيانات المزدوج (سحابي أولاً، ثم محلي كخيار احتياطي)
+        async function loadSavedData() {
+            // تحميل من LocalStorage مؤقتاً لسرعة الواجهة
             const saved = localStorage.getItem('wird_today_minutes');
             if (saved !== null) {
                 totalMinutesToday = parseInt(saved, 10) || 0;
+                updateTimerDisplayFromTotal();
+                renderTiers();
             }
-            updateTimerDisplayFromTotal();
+
+            // سحب البيانات الفعلية المحدثة من Firestore
+            if (db) {
+                try {
+                    const doc = await db.collection("users").doc("mohamed_data").get();
+                    if (doc.exists && doc.data().totalMinutes !== undefined) {
+                        totalMinutesToday = doc.data().totalMinutes;
+                        localStorage.setItem('wird_today_minutes', totalMinutesToday);
+                        updateTimerDisplayFromTotal();
+                        renderTiers();
+                    }
+                } catch (err) {
+                    console.log("جاري استخدام النسخة المحلية لحين توفر الإنترنت:", err);
+                }
+            }
         }
 
+        // الحفظ المزدوج (Dual-Save System)
         function saveData() {
+            // 1. حفظ محلي
             localStorage.setItem('wird_today_minutes', totalMinutesToday);
             renderTiers();
             updateTimerDisplayFromTotal();
 
+            // 2. مزامنة سحابية مع Firestore
             if (db) {
-                db.collection("users").doc("local_user").set({
+                db.collection("users").doc("mohamed_data").set({
                     totalMinutes: totalMinutesToday,
-                    lastUpdated: new Date()
-                }, { merge: true }).catch(err => console.error(err));
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true }).catch(err => console.error("خطأ المزامنة السحابية:", err));
             }
         }
 
+        // --- 4. فحص التحديثات الحقيقي ---
         async function checkForUpdates() {
             const icon = document.getElementById('updateIcon');
             if (icon) icon.classList.add('animate-spin');
@@ -217,7 +266,7 @@
 
             try {
                 if (db) {
-                    const doc = await db.collection("users").doc("local_user").get();
+                    const doc = await db.collection("users").doc("mohamed_data").get();
                     if (doc.exists) {
                         const remoteValue = doc.data().totalMinutes;
                         if (remoteValue !== undefined && remoteValue !== totalMinutesToday) {
@@ -246,13 +295,14 @@
                 if (icon) icon.classList.remove('animate-spin');
                 
                 if (isUpdated) {
-                    showToast("✨ تم التحديث");
+                    showToast("✨ تم التحديث بنجاح من السحابة");
                 } else {
                     showToast("✅ أنت تستعمل آخر نسخة");
                 }
-            }, 500);
+            }, 600);
         }
 
+        // --- 5. منطق الإضافة والخصم ---
         function adjustMinutes(mins) {
             totalMinutesToday = Math.max(0, totalMinutesToday + mins);
             saveData();
@@ -279,6 +329,7 @@
             closeCustomModal();
         }
 
+        // --- 6. رندر المراتب ---
         function renderTiers() {
             const container = document.getElementById('tiersContainer');
             container.innerHTML = '';
@@ -326,6 +377,7 @@
             });
         }
 
+        // --- 7. تشغيل المؤقت ---
         function toggleTimer() {
             if (isTimerRunning) {
                 isTimerRunning = false;
@@ -364,14 +416,11 @@
             setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
 
-        // --- تسجيل خروج سلس بدون رسالة alert المزعجة ---
+        // --- 8. تسجيل خروج أنيق ---
         function logout() {
-            // تسجيل خروج الفايربيس إن وُجد
-            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth()) {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
                 firebase.auth().signOut().catch(() => {});
             }
-            
-            // إظهار إشعار راقٍ في أسفل التطبيق بدلاً من النافذة المنبثقة
             showToast("🚪 تم تسجيل الخروج بنجاح");
         }
     </script>
