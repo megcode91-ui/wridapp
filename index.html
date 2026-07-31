@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق ورد - tracking Wird</title>
+    <title>تطبيق ورد - سلم مراتب الذكر</title>
 
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- خط عربي أنيق -->
+    <!-- الخط العربي (Tajawal) -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDKs (Compat Version لسهولة الاستخدام في ملف واحد) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -19,190 +19,189 @@
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
+            background-color: #f1f5f9;
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4 selection:bg-emerald-500 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between text-slate-800 selection:bg-emerald-500 selection:text-white pb-10">
 
-    <!-- Container الرئيسي -->
-    <div class="w-full max-w-md mx-auto flex flex-col gap-6 my-auto">
-
-        <!-- الهيدر والمرتبة الروحية (10 Tiers) -->
-        <header class="bg-slate-800/80 border border-slate-700/60 rounded-3xl p-6 text-center shadow-xl backdrop-blur-md">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-3 py-1 rounded-full">تطبيق وِرْد</span>
-                <span id="tierBadge" class="text-xs font-bold text-amber-300 bg-amber-950/60 border border-amber-800/50 px-3 py-1 rounded-full">المرتبة 1: المبتدئ</span>
-            </div>
+    <!-- 1. الهيدر العلوي الاحترافي (طابق تصميمك تماماً) -->
+    <header class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-900 text-white px-4 py-4 shadow-md">
+        <div class="max-w-xl mx-auto flex items-center justify-between">
             
-            <h1 class="text-2xl font-extrabold text-white mb-1">جلسة الذكر والخلوة</h1>
-            <p id="tierDescription" class="text-xs text-slate-400">بداية طريق المداومة والسكينة</p>
+            <!-- اليسار: أزرار الخروج والآمان والوقت -->
+            <div class="flex items-center gap-2">
+                <button onclick="logout()" class="bg-emerald-900/80 hover:bg-emerald-800 border border-emerald-700/50 text-emerald-200 px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
+                    <span>➔]</span> خروج
+                </button>
+                <span class="bg-emerald-800/60 border border-emerald-600/40 text-emerald-300 px-2.5 py-1 rounded-xl text-xs flex items-center gap-1">
+                    ☁️ آمن
+                </span>
+                <span id="currentTimeDisplay" class="text-xs text-emerald-200 font-mono dir-ltr">
+                    12:00:00 م
+                </span>
+            </div>
 
-            <!-- شريط التقدم للترقية -->
-            <div class="mt-5">
-                <div class="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>التقدم للمرتبة التالية</span>
-                    <span id="progressPercent">0%</span>
+            <!-- اليمين: اللوجو واسم المستخدم وحالة المزامنة -->
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="flex items-center gap-1">
+                        <span class="text-lg font-black tracking-wide text-white">ورد</span>
+                    </div>
+                    <div class="text-[10px] text-emerald-300">محمد</div>
                 </div>
-                <div class="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden">
-                    <div id="progressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                
+                <span class="bg-emerald-700/80 text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                    محفوظ ومزامَن
+                </span>
+
+                <div class="w-9 h-9 bg-emerald-700 border border-emerald-500 rounded-full flex items-center justify-center text-white text-sm">
+                    👤
                 </div>
             </div>
-        </header>
 
-        <!-- عداد الخلوة (Pomodoro / Timer) -->
-        <section class="bg-slate-800/80 border border-slate-700/60 rounded-3xl p-8 text-center shadow-xl backdrop-blur-md flex flex-col items-center">
+        </div>
+    </header>
+
+    <!-- 2. المحتوى الرئيسي -->
+    <main class="max-w-xl mx-auto w-full px-4 mt-4 flex flex-col gap-4">
+
+        <!-- لوحة التحكم بالمؤقت والإضافة/الخصم -->
+        <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 text-center">
             
-            <!-- عرض الوقت الرقمي -->
-            <div class="my-4">
-                <span id="timerDisplay" class="text-6xl font-black font-mono tracking-tight text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+            <!-- عداد الساعات والدقائق اليومية -->
+            <div class="mb-3">
+                <span class="text-xs font-bold text-slate-400 block mb-1">إجمالي إنجازك اليوم</span>
+                <span id="timerDisplay" class="text-4xl font-extrabold text-emerald-600 font-mono">
                     00:00:00
                 </span>
             </div>
 
-            <!-- أزرار التحكم بالمؤقت -->
-            <div class="flex items-center gap-3 mt-2">
-                <button id="startBtn" onclick="toggleTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-2xl shadow-lg transition active:scale-95 flex items-center gap-2">
+            <!-- زر بدء/إيقاف الجلسة -->
+            <div class="flex justify-center mb-4">
+                <button id="startBtn" onclick="toggleTimer()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-2xl shadow-sm transition active:scale-95 text-sm flex items-center gap-2">
                     <span id="startIcon">▶</span> <span id="startText">بدء الجلسة</span>
                 </button>
-                <button onclick="resetTimer()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 p-3 rounded-2xl transition active:scale-95" title="إعادة ضبط">
-                    🔄
-                </button>
+            </div>
+
+            <!-- أزرار التحكم السريع (تمت إضافة الخصم والمخصص هنا) -->
+            <div class="border-t border-slate-100 pt-3">
+                <div class="text-xs font-semibold text-slate-500 mb-2">تسجيل سريع أو تصحيح:</div>
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <button onclick="adjustMinutes(15)" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-emerald-700 font-bold px-3 py-1.5 rounded-xl text-xs transition">
+                        +15 دقيقة
+                    </button>
+                    <button onclick="adjustMinutes(30)" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-emerald-700 font-bold px-3 py-1.5 rounded-xl text-xs transition">
+                        +30 دقيقة
+                    </button>
+                    <button onclick="adjustMinutes(60)" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-emerald-700 font-bold px-3 py-1.5 rounded-xl text-xs transition">
+                        +1 ساعة
+                    </button>
+
+                    <!-- ميزة الخصم الجديدة -->
+                    <button onclick="adjustMinutes(-60)" class="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1">
+                        🗑️ خصم ساعة (-1س)
+                    </button>
+                    
+                    <!-- ميزة الوقت المخصص -->
+                    <button onclick="openCustomModal()" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1">
+                        ⚙️ مخصص
+                    </button>
+                </div>
             </div>
         </section>
 
-        <!-- الإضافة والتعديل السريع -->
-        <section class="bg-slate-800/80 border border-slate-700/60 rounded-3xl p-6 shadow-xl backdrop-blur-md">
-            <h2 class="text-sm font-bold text-slate-300 mb-3 text-center">إضافة أو تصحيح يدوي سريــع</h2>
+        <!-- بطاقة "سلم مراتب ودرجات الذكر" (طابق الصورة 100%) -->
+        <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-lg">📚</span>
+                <h2 class="text-base font-bold text-slate-800">سلم مراتب ودرجات الذكر</h2>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">التدرج الزمني اليومي للانتقال بين المقامات والدرجات:</p>
+
+            <!-- قائمة المراتب المحدثة ديناميكياً -->
+            <div id="tiersContainer" class="flex flex-col gap-2.5">
+                <!-- يتم توليد القائمة عبر JavaScript لتطابق تصميمك بالضبط -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- نافذة الوقت المخصص (Modal) -->
+    <div id="customModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-xs shadow-xl">
+            <h3 class="text-base font-bold text-slate-800 mb-1">إدخال أو خصم وقت مخصص</h3>
+            <p class="text-xs text-slate-500 mb-4">أدخل الدقائق (استخدم إشارة - للخصم، مثل: -20)</p>
             
-            <!-- أزرار الإضافة السريعة -->
-            <div class="grid grid-cols-3 gap-2 mb-3">
-                <button onclick="adjustMinutes(15)" class="bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 text-emerald-300 py-2.5 rounded-xl font-bold text-sm transition active:scale-95">
-                    +15 دقيقة
-                </button>
-                <button onclick="adjustMinutes(30)" class="bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 text-emerald-300 py-2.5 rounded-xl font-bold text-sm transition active:scale-95">
-                    +30 دقيقة
-                </button>
-                <button onclick="adjustMinutes(60)" class="bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 text-emerald-300 py-2.5 rounded-xl font-bold text-sm transition active:scale-95">
-                    +1 ساعة
-                </button>
-            </div>
-
-            <!-- أزرار الخصم والتعديل المخصص (الميزة الجديدة) -->
-            <div class="grid grid-cols-2 gap-2 border-t border-slate-700/50 pt-3">
-                <button onclick="adjustMinutes(-60)" class="bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/40 text-rose-300 py-2 rounded-xl text-xs font-bold transition active:scale-95 flex items-center justify-center gap-1">
-                    <span>🗑️</span> خصم ساعة (-1س)
-                </button>
-                <button onclick="openCustomModal()" class="bg-slate-700/40 hover:bg-slate-700/80 border border-slate-600/40 text-slate-300 py-2 rounded-xl text-xs font-bold transition active:scale-95 flex items-center justify-center gap-1">
-                    <span>⚙️</span> وقت مخصص
-                </button>
-            </div>
-        </section>
-
-        <!-- الإحصائيات الإجمالية -->
-        <section class="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 flex justify-between items-center text-xs">
-            <span class="text-slate-400">مجموع إنجازك الكلي:</span>
-            <span id="totalHoursDisplay" class="font-extrabold text-amber-400 text-sm">0 ساعة و 0 دقيقة</span>
-        </section>
-
-    </div>
-
-    <!-- نافذة الإدخال المخصص (Modal) -->
-    <div id="customModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 class="text-lg font-bold text-white mb-2">إدخال/خصم وقت مخصص</h3>
-            <p class="text-xs text-slate-400 mb-4">أدخل عدد الدقائق للإضافة، أو استخدم إشارة الناقص (-) للخصم (مثال: -20).</p>
-            
-            <input type="number" id="customMinutesInput" placeholder="مثال: 45 أو -15" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-center font-bold mb-4 focus:outline-none focus:border-emerald-500">
+            <input type="number" id="customMinutesInput" placeholder="مثال: 45 أو -15" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-center font-bold text-slate-800 mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500">
             
             <div class="flex gap-2">
-                <button onclick="closeCustomModal()" class="w-1/2 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-bold text-xs transition">إلغاء</button>
-                <button onclick="applyCustomMinutes()" class="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition">تأكيد الحفظ</button>
+                <button onclick="closeCustomModal()" class="w-1/2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs">إلغاء</button>
+                <button onclick="applyCustomMinutes()" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs">تأكيد</button>
             </div>
         </div>
     </div>
 
-    <!-- الإشعارات السريعة (Toast) -->
-    <div id="toast" class="fixed bottom-6 bg-slate-800 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-xs font-bold shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none">
-        تم تحديث البيانات بنجاح
+    <!-- إشعار سريع (Toast) -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none">
+        تم تحديث البيانات
     </div>
 
     <!-- JavaScript Logic -->
     <script>
-        // --- 1. إعدادات Firebase (ضع بيانات مشروؤك هنا إذا أردت المزامنة السحابية) ---
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        
-        // تهيئة السحابة إذا كانت البيانات متوفرة
-        let db = null;
-        try {
-            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore();
-            }
-        } catch (e) {
-            console.log("Firestore غير مهيأ، يعمل النظام بـ LocalStorage فقط حالياً.");
-        }
-
-        // --- 2. المراتب الروحية العشر (10 Tiers) ---
-        const TIERS = [
-            { level: 1, name: "المبتدئ", minHours: 0, desc: "بداية طريق المداومة والسكينة" },
-            { level: 2, name: "المواظب", minHours: 5, desc: "تثبيت أقدامك في رياض الذكر" },
-            { level: 3, name: "الذاكر", minHours: 15, desc: "انشراح الصدر بالأنس والذكر" },
-            { level: 4, name: "المطمئن", minHours: 30, desc: "تذوق حلاوة الخلوة والاستغناء" },
-            { level: 5, name: "القانت", minHours: 50, desc: "رسوخ العبادة في سكنات اليوم" },
-            { level: 6, name: "الخاشع", minHours: 80, desc: "صفاء الذهن ونور البصيرة" },
-            { level: 7, name: "المتبتل", minHours: 120, desc: "الانقطاع الصادق للحق سبحانه" },
-            { level: 8, name: "المرابط", minHours: 170, desc: "حراسة القلب من غفلات الزمان" },
-            { level: 9, name: "الوليّ", minHours: 230, desc: "الاستغراق الكامل في معاني الذكر" },
-            { level: 10, name: "صاحب الخلوة التامة", minHours: 300, desc: "درجة الاستقامة والدوام المطلق" }
+        // --- البيانات الكاملة لمراتب الذكر (كما في الصورة تماماً) ---
+        const TIERS_DATA = [
+            { id: 'gafil', name: 'الغافل', range: '0 دقيقة', minMins: 0, maxMins: 0, icon: '🌙' },
+            { id: 'mustayqiz', name: 'المستيقظ', range: '1 إلى 10 دقائق', minMins: 1, maxMins: 10, icon: '☀️' },
+            { id: 'zakir', name: 'الذاكر', range: '10 إلى 30 دقيقة', minMins: 10, maxMins: 30, icon: '🍃' },
+            { id: 'hazir', name: 'الحاضر', range: '30 دقيقة إلى ساعة', minMins: 30, maxMins: 60, icon: '💚' },
+            { id: 'mudawim', name: 'المداوم', range: '1 إلى 3 ساعات', minMins: 60, maxMins: 180, icon: '🕒' },
+            { id: 'mushahid', name: 'المُشَاهِد', range: '3 إلى 6 ساعات', minMins: 180, maxMins: 360, icon: '👁️' },
+            { id: 'munqati', name: 'المُنْقَطِع', range: '6 إلى 12 ساعة', minMins: 360, maxMins: 720, icon: '🔺' },
+            { id: 'fani', name: 'الفاني', range: '12 إلى 16 ساعة', minMins: 720, maxMins: 960, icon: '🔥' },
+            { id: 'baqi', name: 'الباقي', range: 'كل ساعات اليقظة', minMins: 960, maxMins: 99999, icon: '♾️' }
         ];
 
-        // --- 3. المتغيرات العامة ---
-        let totalMinutes = 0; // مجموع الدقائق الكلي المسجل
-        let timerInterval = null;
-        let timerSeconds = 0;
+        let totalMinutesToday = 90; // افتراضي للجلسة (يوافق مرتبة "المداوم")
         let isTimerRunning = false;
+        let timerSeconds = 0;
+        let timerInterval = null;
 
-        // --- 4. التحميل المبدئي للبيانات (Dual-Save System) ---
+        // --- عند تحميل الصفحة ---
         window.addEventListener('DOMContentLoaded', () => {
-            loadLocalData();
-            updateUI();
+            loadSavedData();
+            startClock();
+            renderTiers();
         });
 
-        function loadLocalData() {
-            const saved = localStorage.getItem('wird_total_minutes');
+        // 1. عرض الساعة الحقيقية بالهيدر
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('currentTimeDisplay').innerText = now.toLocaleTimeString('ar-EG');
+            }, 1000);
+        }
+
+        // 2. تحميل البيانات المحلية (LocalStorage)
+        function loadSavedData() {
+            const saved = localStorage.getItem('wird_today_minutes');
             if (saved !== null) {
-                totalMinutes = parseInt(saved, 10) || 0;
+                totalMinutesToday = parseInt(saved, 10) || 0;
             }
+            updateTimerDisplayFromTotal();
         }
 
         function saveData() {
-            // 1. حفظ محلي (LocalStorage)
-            localStorage.setItem('wird_total_minutes', totalMinutes);
-
-            // 2. حفظ سحابي (Firestore)
-            if (db) {
-                db.collection("users").doc("local_user").set({
-                    totalMinutes: totalMinutes,
-                    lastUpdated: new Date()
-                }, { merge: true }).catch(err => console.error("خطأ المزامنة السحابية:", err));
-            }
-
-            updateUI();
+            localStorage.setItem('wird_today_minutes', totalMinutesToday);
+            renderTiers();
+            updateTimerDisplayFromTotal();
         }
 
-        // --- 5. منطق تعديل الوقت (إضافة / خصم / مخصص) ---
+        // 3. تعديل الدقائق (إضافة أو خصم)
         function adjustMinutes(mins) {
-            // منع الخفض تحت الصفر
-            totalMinutes = Math.max(0, totalMinutes + mins);
+            totalMinutesToday = Math.max(0, totalMinutesToday + mins); // منع النزول تحت الصفر
             saveData();
-
+            
             if (mins > 0) {
                 showToast(`➕ تمت إضافة ${mins} دقيقة`);
             } else if (mins < 0) {
@@ -210,119 +209,115 @@
             }
         }
 
+        // 4. النافذة المنبثقة للمخصص
         function openCustomModal() {
             document.getElementById('customModal').classList.remove('hidden');
-            document.getElementById('customMinutesInput').focus();
         }
-
         function closeCustomModal() {
             document.getElementById('customModal').classList.add('hidden');
             document.getElementById('customMinutesInput').value = '';
         }
-
         function applyCustomMinutes() {
-            const inputVal = parseInt(document.getElementById('customMinutesInput').value, 10);
-            if (!isNaN(inputVal) && inputVal !== 0) {
-                adjustMinutes(inputVal);
+            const val = parseInt(document.getElementById('customMinutesInput').value, 10);
+            if (!isNaN(val) && val !== 0) {
+                adjustMinutes(val);
             }
             closeCustomModal();
         }
 
-        // --- 6. منطق العداد (Timer) ---
+        // 5. بناء قائمة المراتب وتحديد المرتبة النشطة (مثل تصميمك تماماً)
+        function renderTiers() {
+            const container = document.getElementById('tiersContainer');
+            container.innerHTML = '';
+
+            TIERS_DATA.forEach(tier => {
+                // تحديد هل المستخدم في هذه المرتبة حالياً
+                let isActive = false;
+                if (tier.minMins === 0 && totalMinutesToday === 0) {
+                    isActive = true;
+                } else if (tier.minMins > 0 && totalMinutesToday >= tier.minMins && (totalMinutesToday < tier.maxMins || tier.maxMins === 99999)) {
+                    isActive = true;
+                }
+
+                // إنشاء عنصر المرتبة
+                const card = document.createElement('div');
+                
+                if (isActive) {
+                    // تصميم المرتبة النشطة (إطار سماوي/أخضر وبادج "مرتبتك اليوم")
+                    card.className = "flex items-center justify-between p-3.5 bg-emerald-50/40 border-2 border-teal-300 rounded-2xl shadow-sm transition-all";
+                    card.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                                مرتبتك اليوم
+                            </span>
+                            <div class="text-right">
+                                <div class="font-extrabold text-slate-800 text-sm">${tier.name}</div>
+                                <div class="text-[11px] text-slate-500">${tier.range}</div>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-base">
+                            ${tier.icon}
+                        </div>
+                    `;
+                } else {
+                    // تصميم المراتب العادية (رمادي خفيف مطابق للصورة)
+                    card.className = "flex items-center justify-between p-3.5 bg-slate-50 border border-slate-100 rounded-2xl opacity-90";
+                    card.innerHTML = `
+                        <div class="text-right">
+                            <div class="font-bold text-slate-700 text-sm">${tier.name}</div>
+                            <div class="text-[11px] text-slate-400">${tier.range}</div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-200/50 flex items-center justify-center text-slate-500 text-sm">
+                            ${tier.icon}
+                        </div>
+                    `;
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        // 6. تشغيل/إيقاف المؤقت
         function toggleTimer() {
             if (isTimerRunning) {
-                pauseTimer();
+                isTimerRunning = false;
+                clearInterval(timerInterval);
+                document.getElementById('startText').innerText = "متابعة الجلسة";
+                document.getElementById('startIcon').innerText = "▶";
+                document.getElementById('startBtn').classList.replace('bg-amber-600', 'bg-emerald-600');
             } else {
-                startTimer();
+                isTimerRunning = true;
+                document.getElementById('startText').innerText = "إيقاف مؤقت";
+                document.getElementById('startIcon').innerText = "⏸";
+                document.getElementById('startBtn').classList.replace('bg-emerald-600', 'bg-amber-600');
+
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    if (timerSeconds % 60 === 0) {
+                        totalMinutesToday++;
+                        saveData();
+                    }
+                    updateTimerDisplayFromTotal();
+                }, 1000);
             }
         }
 
-        function startTimer() {
-            isTimerRunning = true;
-            document.getElementById('startText').innerText = "إيقاف مؤقت";
-            document.getElementById('startIcon').innerText = "⏸";
-            document.getElementById('startBtn').classList.replace('bg-emerald-600', 'bg-amber-600');
-            document.getElementById('startBtn').classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
-
-            timerInterval = setInterval(() => {
-                timerSeconds++;
-                updateTimerDisplay();
-
-                // تحويل كل 60 ثانية جارية إلى دقيقة وإضافتها للإجمالي تلقائياً
-                if (timerSeconds % 60 === 0) {
-                    totalMinutes++;
-                    saveData();
-                }
-            }, 1000);
-        }
-
-        function pauseTimer() {
-            isTimerRunning = false;
-            clearInterval(timerInterval);
-            document.getElementById('startText').innerText = "متابعة الجلسة";
-            document.getElementById('startIcon').innerText = "▶";
-            document.getElementById('startBtn').classList.replace('bg-amber-600', 'bg-emerald-600');
-            document.getElementById('startBtn').classList.replace('hover:bg-amber-500', 'hover:bg-emerald-500');
-        }
-
-        function resetTimer() {
-            pauseTimer();
-            timerSeconds = 0;
-            updateTimerDisplay();
-            document.getElementById('startText').innerText = "بدء الجلسة";
-        }
-
-        function updateTimerDisplay() {
-            const hrs = Math.floor(timerSeconds / 3600).toString().padStart(2, '0');
-            const mins = Math.floor((timerSeconds % 3600) / 60).toString().padStart(2, '0');
+        function updateTimerDisplayFromTotal() {
+            const hrs = Math.floor(totalMinutesToday / 60).toString().padStart(2, '0');
+            const mins = (totalMinutesToday % 60).toString().padStart(2, '0');
             const secs = (timerSeconds % 60).toString().padStart(2, '0');
             document.getElementById('timerDisplay').innerText = `${hrs}:${mins}:${secs}`;
         }
 
-        // --- 7. تحديث الواجهة والدرجات (UI & Tier Calculations) ---
-        function updateUI() {
-            const totalHours = totalMinutes / 60;
-
-            // تحديد المرتبة الحالية
-            let currentTier = TIERS[0];
-            let nextTier = TIERS[1];
-
-            for (let i = 0; i < TIERS.length; i++) {
-                if (totalHours >= TIERS[i].minHours) {
-                    currentTier = TIERS[i];
-                    nextTier = TIERS[i + 1] || null;
-                }
-            }
-
-            // تحديث النصوص والوسام
-            document.getElementById('tierBadge').innerText = `المرتبة ${currentTier.level}: ${currentTier.name}`;
-            document.getElementById('tierDescription').innerText = currentTier.desc;
-
-            // حساب نسبة التقدم للمرتبة التالية
-            let progressPercent = 100;
-            if (nextTier) {
-                const range = nextTier.minHours - currentTier.minHours;
-                const done = totalHours - currentTier.minHours;
-                progressPercent = Math.min(100, Math.max(0, Math.floor((done / range) * 100)));
-            }
-
-            document.getElementById('progressBar').style.width = `${progressPercent}%`;
-            document.getElementById('progressPercent').innerText = `${progressPercent}%`;
-
-            // تحديث نص الساعات الإجمالي
-            const displayHours = Math.floor(totalMinutes / 60);
-            const displayMins = totalMinutes % 60;
-            document.getElementById('totalHoursDisplay').innerText = `${displayHours} ساعة و ${displayMins} دقيقة`;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
 
-        // --- 8. إشعارات Toast ---
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.remove('opacity-0');
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-            }, 2500);
+        function logout() {
+            alert('تم تسجيل الخروج');
         }
     </script>
 </body>
