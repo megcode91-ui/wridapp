@@ -25,7 +25,7 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between text-slate-800 selection:bg-emerald-500 selection:text-white pb-10">
 
-    <!-- 1. الهيدر العلوي الاحترافي (تم إضافة زر التحديث هنا) -->
+    <!-- 1. الهيدر العلوي الاحترافي -->
     <header class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-900 text-white px-4 py-4 shadow-md">
         <div class="max-w-xl mx-auto flex items-center justify-between">
             
@@ -35,7 +35,7 @@
                     <span>➔]</span> خروج
                 </button>
 
-                <!-- زر التحديث الجديد -->
+                <!-- زر التحديث -->
                 <button onclick="checkForUpdates()" class="bg-emerald-800/80 hover:bg-emerald-700/90 border border-emerald-600/50 text-emerald-100 px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95 shadow-sm" title="فحص التحديثات">
                     <span id="updateIcon" class="inline-block transition-transform">🔄</span>
                     <span>تحديث</span>
@@ -148,14 +148,13 @@
         </div>
     </div>
 
-    <!-- إشعار سريع (Toast) -->
+    <!-- إشعار سريع أنيق (Toast) -->
     <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-xs font-bold shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none z-50">
         تم تحديث البيانات
     </div>
 
     <!-- JavaScript Logic -->
     <script>
-        // إعدادات Firebase الاختيارية للمزامنة
         let db = null;
 
         const TIERS_DATA = [
@@ -170,7 +169,7 @@
             { id: 'baqi', name: 'الباقي', range: 'كل ساعات اليقظة', minMins: 960, maxMins: 99999, icon: '♾️' }
         ];
 
-        let totalMinutesToday = 90;
+        let totalMinutesToday = 95;
         let isTimerRunning = false;
         let timerSeconds = 0;
         let timerInterval = null;
@@ -202,7 +201,6 @@
             renderTiers();
             updateTimerDisplayFromTotal();
 
-            // المزامنة السحابية إذا كان داتابيز Firebase مفعل
             if (db) {
                 db.collection("users").doc("local_user").set({
                     totalMinutes: totalMinutesToday,
@@ -211,7 +209,6 @@
             }
         }
 
-        // --- دالة فحص التحديث الجديدة ---
         async function checkForUpdates() {
             const icon = document.getElementById('updateIcon');
             if (icon) icon.classList.add('animate-spin');
@@ -219,7 +216,6 @@
             let isUpdated = false;
 
             try {
-                // 1. إذا كانت داتابيز الفايربيس متصلة
                 if (db) {
                     const doc = await db.collection("users").doc("local_user").get();
                     if (doc.exists) {
@@ -231,7 +227,6 @@
                         }
                     }
                 } else {
-                    // 2. فحص التخزين المحلي لمعرفة إذا حُدّثت البيانات من مصدر/نافذة أخرى
                     const saved = localStorage.getItem('wird_today_minutes');
                     if (saved !== null) {
                         const parsed = parseInt(saved, 10);
@@ -247,7 +242,6 @@
                 console.error("خطأ التحديث:", error);
             }
 
-            // إيقاف دوران الأيقونة وإظهار الإشعار المناسب
             setTimeout(() => {
                 if (icon) icon.classList.remove('animate-spin');
                 
@@ -370,8 +364,15 @@
             setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
 
+        // --- تسجيل خروج سلس بدون رسالة alert المزعجة ---
         function logout() {
-            alert('تم تسجيل الخروج');
+            // تسجيل خروج الفايربيس إن وُجد
+            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth()) {
+                firebase.auth().signOut().catch(() => {});
+            }
+            
+            // إظهار إشعار راقٍ في أسفل التطبيق بدلاً من النافذة المنبثقة
+            showToast("🚪 تم تسجيل الخروج بنجاح");
         }
     </script>
 </body>
