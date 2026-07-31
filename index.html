@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق وِرد - النسخة 8 (مربوط بالخادم)</title>
+    <title>تطبيق وِرد - النسخة 8 (مع تسجيل الدخول)</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,33 +18,58 @@
 
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- Header / الشريط العلوي -->
-    <header class="bg-gradient-to-r from-emerald-900 via-teal-800 to-slate-900 text-white shadow-md p-4 sticky top-0 z-40">
-        <div class="max-w-2xl mx-auto flex justify-between items-center">
+    <!-- شاشة تسجيل الدخول (تظهر قبل الدخول) -->
+    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center text-white px-4">
+        <div class="text-center space-y-6 max-w-sm w-full">
+            <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-6xl"></i>
             <div>
-                <h1 class="text-2xl font-black tracking-wide flex items-center gap-2">
-                    <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-lg"></i> وِرد <span class="text-xs bg-emerald-600/60 px-2 py-0.5 rounded-full font-normal">v8 (سحابي)</span>
-                </h1>
-                <p id="hijri-date" class="text-xs text-emerald-100/80 mt-0.5">جاري جلب التقويم القمري...</p>
+                <h1 class="text-4xl font-black mb-2">وِرد</h1>
+                <p class="text-slate-300 text-sm">نظام مراتب ودرجات خلوة الذكر</p>
             </div>
-            <div class="text-left flex items-center gap-2">
-                <span id="cloud-status" class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-md flex items-center gap-1">
-                    <i class="fa-solid fa-cloud animate-pulse"></i> متصل
-                </span>
-                <span id="current-time-clock" class="text-xs font-mono bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 block">00:00:00</span>
+            <button id="google-login-btn" class="w-full bg-white text-slate-800 font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-100 transition shadow-lg">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
+                تسجيل الدخول باستخدام جوجل
+            </button>
+            <p id="auth-loading" class="text-emerald-400 text-sm hidden">جاري التحقق...</p>
+        </div>
+    </div>
+
+    <!-- Header / الشريط العلوي -->
+    <header id="main-header" class="hidden bg-gradient-to-r from-emerald-900 via-teal-800 to-slate-900 text-white shadow-md p-4 sticky top-0 z-40">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img id="user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-emerald-500/50 object-cover shadow-sm">
+                <div>
+                    <h1 class="text-lg font-black tracking-wide flex items-center gap-1">
+                        وِرد <span class="text-[10px] bg-emerald-600/80 px-2 py-0.5 rounded-full font-normal">سحابي</span>
+                    </h1>
+                    <p id="user-name" class="text-xs text-emerald-200/80 mt-0.5 truncate max-w-[120px]">جاري التحميل...</p>
+                </div>
+            </div>
+            <div class="text-left flex flex-col items-end gap-1.5">
+                <div class="flex items-center gap-2">
+                    <span id="cloud-status" class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-md flex items-center gap-1">
+                        <i class="fa-solid fa-cloud"></i> متصل
+                    </span>
+                    <button id="logout-btn" title="تسجيل الخروج" class="text-slate-300 hover:text-white transition p-1 bg-white/5 rounded-lg border border-white/10 text-xs px-2">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+                    </button>
+                </div>
+                <span id="current-time-clock" class="text-xs font-mono bg-white/10 px-2 py-0.5 rounded-lg border border-white/10 block">00:00:00</span>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-2xl mx-auto w-full p-4 flex-1 space-y-6">
+    <main id="main-app" class="hidden max-w-2xl mx-auto w-full p-4 flex-1 space-y-6">
 
         <!-- 1. بطاقة حصيلة اليوم عند الساعة 23:00 -->
-        <section id="daily-summary-card" class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-2 border-emerald-500/30 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
+        <section class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-2 border-emerald-500/30 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
             <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
                 <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
@@ -80,7 +105,6 @@
                 </span>
             </div>
 
-            <!-- عداد الوقت الرقمي -->
             <div class="text-center py-2">
                 <div id="pomo-display" class="text-6xl font-black font-mono tracking-wider text-emerald-300 drop-shadow-md">
                     15:00
@@ -88,7 +112,6 @@
                 <p class="text-xs text-emerald-200/70 mt-2">تفرّغ للذكر والاستغفار والمناجاة بعيداً عن المشتتات</p>
             </div>
 
-            <!-- خيارات الأوقات الافتراضية -->
             <div class="flex justify-center gap-1.5 text-xs font-bold flex-wrap">
                 <button onclick="window.setPomodoroTime(1)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">1 د</button>
                 <button onclick="window.setPomodoroTime(3)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">3 د</button>
@@ -100,7 +123,6 @@
                 <button onclick="window.promptCustomPomodoro()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-emerald-300">+ مخصص</button>
             </div>
 
-            <!-- أزرار التحكم -->
             <div class="flex justify-center gap-3 pt-2">
                 <button id="pomo-start-btn" onclick="window.togglePomodoro()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-2.5 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center gap-2">
                     <i class="fa-solid fa-play"></i> ابدأ الخلوة
@@ -114,7 +136,7 @@
             </div>
         </section>
 
-        <!-- 3. معدل جميع الأيام والإحصائيات -->
+        <!-- 3. معدل جميع الأيام -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3 border-slate-100">
                 <div>
@@ -136,7 +158,6 @@
                 </div>
             </div>
 
-            <!-- بطاقات الفترات التاريخية -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
                 <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
                     <span class="block font-semibold text-emerald-800 mb-1">آخر 24 ساعة</span>
@@ -157,32 +178,29 @@
             </div>
         </section>
 
-        <!-- 4. جدول سلم المراتب والدرجات الإيمانية -->
+        <!-- 4. سلم المراتب -->
         <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-3">
             <h3 class="font-extrabold text-slate-800 text-sm flex items-center gap-2 border-b pb-3 border-slate-100">
                 <i class="fa-solid fa-layer-group text-amber-600"></i> سلم مراتب ودرجات الذكر
             </h3>
             <p class="text-xs text-slate-500">التدرج الزمني اليومي للانتقال بين المقامات والدرجات:</p>
-
-            <div id="grades-list" class="space-y-2 text-xs pt-1">
-                <!-- سيتم إدراج درجات السلم ديناميكياً -->
-            </div>
+            <div id="grades-list" class="space-y-2 text-xs pt-1"></div>
         </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white mt-6">
-        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Firebase Enabled)
+    <footer id="main-footer" class="hidden text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white mt-6">
+        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Firebase Auth Enabled)
     </footer>
 
-    <!-- Firebase SDK & Application Logic -->
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // إعدادات Firebase الخاصة بك
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCOstJoI5KKmBWFp8XoTahkZ1RJ_ggD0tY",
             authDomain: "wird-7cfbe.firebaseapp.com",
@@ -193,12 +211,23 @@
             measurementId: "G-NTQBWC1WLW"
         };
 
-        // تهيئة Firebase
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // 1. مصفوفة الدرجات والمراتب
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
+        let pomodoroLogs = [];
+
+        // متغيرات مؤقت Pomodoro
+        let pomoDurationMinutes = 15;
+        let pomoTimeLeftSeconds = 15 * 60;
+        let pomoTimerInterval = null;
+        let isPomoRunning = false;
+
         const GRADES_LADDER = [
             { key: 'ghafil', title: 'الغافل', minMin: 0, maxMin: 0, desc: '0 دقيقة', icon: 'fa-moon', color: 'text-slate-500', bg: 'bg-slate-100', border: 'border-slate-300' },
             { key: 'mustayqiz', title: 'المُستيقظ', minMin: 1, maxMin: 10, desc: '1 إلى 10 دقائق', icon: 'fa-sun', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300' },
@@ -212,66 +241,88 @@
             { key: 'aalim', title: 'العالِم', minMin: 1440, maxMin: Infinity, desc: 'دوام متصل (القلب لا يغفل حتى في النوم)', icon: 'fa-crown', color: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-300' }
         ];
 
-        let pomodoroLogs = JSON.parse(localStorage.getItem('pomo_logs_v8')) || [];
+        // 1. نظام تسجيل الدخول (Authentication)
+        document.getElementById('google-login-btn').addEventListener('click', () => {
+            document.getElementById('auth-loading').classList.remove('hidden');
+            signInWithPopup(auth, provider).catch((error) => {
+                console.error("Login Error:", error);
+                document.getElementById('auth-loading').innerText = "حدث خطأ أثناء تسجيل الدخول.";
+            });
+        });
 
-        let pomoDurationMinutes = 15;
-        let pomoTimeLeftSeconds = 15 * 60;
-        let pomoTimerInterval = null;
-        let isPomoRunning = false;
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.reload();
+            });
+        });
 
-        // 2. الربط بالسيرفر والحفظ اللحظي
-        function syncWithFirestore() {
-            const q = query(collection(db, "dhikr_sessions"), orderBy("timestamp", "asc"));
-            onSnapshot(q, (snapshot) => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-header').classList.remove('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('main-footer').classList.remove('hidden');
+                
+                document.getElementById('user-name').innerText = user.displayName;
+                document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/40';
+
+                initClocks();
+                syncWithFirestore(user.uid);
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('main-header').classList.add('hidden');
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('main-footer').classList.add('hidden');
+                document.getElementById('auth-loading').classList.add('hidden');
+            }
+        });
+
+        // 2. الربط بالسيرفر (مربوط بحساب المستخدم)
+        function syncWithFirestore(uid) {
+            const userSessionsRef = collection(db, "users", uid, "dhikr_sessions");
+            const q = query(userSessionsRef, orderBy("timestamp", "asc"));
+            
+            if(unsubscribeSnapshot) unsubscribeSnapshot();
+
+            unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
                 const cloudLogs = [];
                 snapshot.forEach((doc) => {
                     cloudLogs.push(doc.data());
                 });
-                if (cloudLogs.length > 0) {
-                    pomodoroLogs = cloudLogs;
-                    localStorage.setItem('pomo_logs_v8', JSON.stringify(pomodoroLogs));
-                    updateAllDashboard();
-                }
+                pomodoroLogs = cloudLogs;
+                updateAllDashboard();
             }, (error) => {
-                console.warn("تعذر الاتصال بالسيرفر، يعمل الآن بالوضع المحلي:", error);
+                console.warn("تعذر الاتصال بالسيرفر:", error);
             });
         }
 
         async function saveSessionToCloud(duration) {
-            const logItem = {
-                durationMinutes: duration,
-                timestamp: Date.now()
-            };
+            if(!currentUser) return;
+            const logItem = { durationMinutes: duration, timestamp: Date.now() };
 
-            // حفظ محلي فوري
             pomodoroLogs.push(logItem);
-            localStorage.setItem('pomo_logs_v8', JSON.stringify(pomodoroLogs));
             updateAllDashboard();
 
-            // إرسال للسيرفر
             try {
-                await addDoc(collection(db, "dhikr_sessions"), logItem);
+                const userSessionsRef = collection(db, "users", currentUser.uid, "dhikr_sessions");
+                await addDoc(userSessionsRef, logItem);
             } catch (e) {
-                console.error("خطأ في حفظ الجلسة على السيرفر: ", e);
+                console.error("خطأ في الحفظ السحابي: ", e);
             }
         }
 
+        // 3. المنطق والمؤقت
         function getGradeObj(minutes) {
             if (minutes <= 0) return GRADES_LADDER[0];
             for (let i = GRADES_LADDER.length - 1; i >= 0; i--) {
-                if (minutes >= GRADES_LADDER[i].minMin) {
-                    return GRADES_LADDER[i];
-                }
+                if (minutes >= GRADES_LADDER[i].minMin) return GRADES_LADDER[i];
             }
             return GRADES_LADDER[0];
         }
 
         function initClocks() {
-            const options = { calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric' };
-            const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', options);
-            document.getElementById('hijri-date').innerText = formatter.format(new Date());
             document.getElementById('year').innerText = new Date().getFullYear();
-
             setInterval(() => {
                 const now = new Date();
                 document.getElementById('current-time-clock').innerText = now.toLocaleTimeString('ar-SA');
@@ -308,9 +359,7 @@
 
         window.promptCustomPomodoro = function() {
             const custom = prompt("أدخل مدة خلوة الذكر بالدقائق:", "20");
-            if (custom && !isNaN(custom) && parseInt(custom) > 0) {
-                window.setPomodoroTime(parseInt(custom));
-            }
+            if (custom && !isNaN(custom) && parseInt(custom) > 0) window.setPomodoroTime(parseInt(custom));
         };
 
         window.promptManualLog = function() {
@@ -318,7 +367,7 @@
             if (custom && !isNaN(custom) && parseInt(custom) > 0) {
                 const mins = parseInt(custom);
                 saveSessionToCloud(mins);
-                alert(`تم تسجيل ${mins} دقيقة خلوة وحفظها سحابياً بنجاح.`);
+                alert(`تم تسجيل ${mins} دقيقة خلوة بنجاح.`);
             }
         };
 
@@ -354,7 +403,6 @@
             isPomoRunning = false;
             pomoTimeLeftSeconds = pomoDurationMinutes * 60;
             updatePomoDisplay();
-
             document.getElementById('pomo-start-btn').innerHTML = `<i class="fa-solid fa-play"></i> ابدأ الخلوة`;
             const statusTag = document.getElementById('pomo-status-tag');
             statusTag.innerText = "جاهز للبدء";
@@ -364,11 +412,9 @@
         function completePomodoroSession() {
             clearInterval(pomoTimerInterval);
             isPomoRunning = false;
-            
             saveSessionToCloud(pomoDurationMinutes);
             playCompletionBeep();
             alert(`تقبل الله! أتممت خلوة ذكر لمدة ${pomoDurationMinutes} دقيقة 🎉`);
-            
             window.resetPomodoro();
         }
 
@@ -384,22 +430,19 @@
             } catch (e) {}
         }
 
+        // 4. الحسابات والتحديث
         function getMinutesInPeriod(periodKey) {
             const now = Date.now();
             if (periodKey === 'today') {
                 const startOfToday = new Date();
                 startOfToday.setHours(0,0,0,0);
-                return pomodoroLogs.filter(l => l.timestamp >= startOfToday.getTime())
-                                   .reduce((a, b) => a + b.durationMinutes, 0);
+                return pomodoroLogs.filter(l => l.timestamp >= startOfToday.getTime()).reduce((a, b) => a + b.durationMinutes, 0);
             } else if (periodKey === '24h') {
-                return pomodoroLogs.filter(l => l.timestamp >= (now - 24 * 60 * 60 * 1000))
-                                   .reduce((a, b) => a + b.durationMinutes, 0);
+                return pomodoroLogs.filter(l => l.timestamp >= (now - 24 * 60 * 60 * 1000)).reduce((a, b) => a + b.durationMinutes, 0);
             } else if (periodKey === '7d') {
-                return pomodoroLogs.filter(l => l.timestamp >= (now - 7 * 24 * 60 * 60 * 1000))
-                                   .reduce((a, b) => a + b.durationMinutes, 0);
+                return pomodoroLogs.filter(l => l.timestamp >= (now - 7 * 24 * 60 * 60 * 1000)).reduce((a, b) => a + b.durationMinutes, 0);
             } else if (periodKey === '30d') {
-                return pomodoroLogs.filter(l => l.timestamp >= (now - 30 * 24 * 60 * 60 * 1000))
-                                   .reduce((a, b) => a + b.durationMinutes, 0);
+                return pomodoroLogs.filter(l => l.timestamp >= (now - 30 * 24 * 60 * 60 * 1000)).reduce((a, b) => a + b.durationMinutes, 0);
             } else if (periodKey === 'total') {
                 return pomodoroLogs.reduce((a, b) => a + b.durationMinutes, 0);
             }
@@ -408,17 +451,14 @@
 
         function calculateOverallDailyAverage() {
             if (pomodoroLogs.length === 0) return 0;
-            
             const daysMap = {};
             pomodoroLogs.forEach(log => {
                 const d = new Date(log.timestamp);
                 const dateStr = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
                 daysMap[dateStr] = (daysMap[dateStr] || 0) + log.durationMinutes;
             });
-
             const uniqueDaysCount = Object.keys(daysMap).length;
             if (uniqueDaysCount === 0) return 0;
-
             const totalMinutes = Object.values(daysMap).reduce((a, b) => a + b, 0);
             return Math.round(totalMinutes / uniqueDaysCount);
         }
@@ -434,9 +474,7 @@
             const todayMins = getMinutesInPeriod('today');
             const todayGrade = getGradeObj(todayMins);
 
-            document.getElementById('today-grade-title').innerHTML = `
-                <i class="fa-solid ${todayGrade.icon} ${todayGrade.color}"></i> ${todayGrade.title}
-            `;
+            document.getElementById('today-grade-title').innerHTML = `<i class="fa-solid ${todayGrade.icon} ${todayGrade.color}"></i> ${todayGrade.title}`;
             document.getElementById('today-grade-desc').innerHTML = `مجموع خلوة الذكر اليوم: <span class="font-bold text-slate-800">${formatDuration(todayMins)}</span>`;
             
             const todayBadge = document.getElementById('today-grade-badge');
@@ -464,17 +502,13 @@
         function renderGradesLadder(activeKey) {
             const container = document.getElementById('grades-list');
             container.innerHTML = '';
-
             GRADES_LADDER.forEach((g) => {
                 const isActive = g.key === activeKey;
                 const row = document.createElement('div');
                 row.className = `flex items-center justify-between p-3 rounded-2xl border transition ${isActive ? `${g.bg} ${g.border} border-2 shadow-sm scale-[1.01]` : 'bg-slate-50 border-slate-200/70 text-slate-600'}`;
-
                 row.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-base ${g.bg} ${g.color}">
-                            <i class="fa-solid ${g.icon}"></i>
-                        </div>
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-base ${g.bg} ${g.color}"><i class="fa-solid ${g.icon}"></i></div>
                         <div>
                             <h4 class="font-bold ${isActive ? 'text-slate-900 text-sm' : 'text-slate-700'}">${g.title} ${isActive ? '<span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full mr-1">مرتبتك اليوم</span>' : ''}</h4>
                             <span class="text-[11px] text-slate-500">${g.desc}</span>
@@ -484,14 +518,6 @@
                 container.appendChild(row);
             });
         }
-
-        // تشغيل التهيئة عند تحميل الصفحة
-        window.onload = () => {
-            initClocks();
-            updatePomoDisplay();
-            updateAllDashboard();
-            syncWithFirestore();
-        };
     </script>
 </body>
 </html>
