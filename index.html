@@ -11,7 +11,7 @@
     <!-- الخط العربي (Tajawal) -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDKs (Compat Version لسهولة الاستخدام في ملف واحد) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -156,7 +156,7 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // --- 1. إعدادات Firebase الخاصة بمشروعك (wird-7cfbe) ---
+        // --- 1. إعدادات Firebase الخاصة بالمشروع (wird-7cfbe) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCOstJoI5KKmBWFp8XoTahkZ1RJ_ggD0tY",
             authDomain: "wird-7cfbe.firebaseapp.com",
@@ -167,7 +167,6 @@
             measurementId: "G-NTQBWC1WLW"
         };
 
-        // تهيئة السحابة والقواعد البيانات
         let db = null;
         let analytics = null;
 
@@ -177,9 +176,8 @@
             }
             db = firebase.firestore();
             analytics = firebase.analytics();
-            console.log("تم الاتصال بـ Firebase بنجاح 🔥");
         } catch (e) {
-            console.warn("تعذر تهيئة Firebase السحابية، سيعمل التطبيق محلياً:", e);
+            console.warn("Firebase المحلي:", e);
         }
 
         // --- 2. بيانات مراتب الذكر ---
@@ -215,9 +213,7 @@
             }, 1000);
         }
 
-        // تحميل البيانات المزدوج (سحابي أولاً، ثم محلي كخيار احتياطي)
         async function loadSavedData() {
-            // تحميل من LocalStorage مؤقتاً لسرعة الواجهة
             const saved = localStorage.getItem('wird_today_minutes');
             if (saved !== null) {
                 totalMinutesToday = parseInt(saved, 10) || 0;
@@ -225,7 +221,6 @@
                 renderTiers();
             }
 
-            // سحب البيانات الفعلية المحدثة من Firestore
             if (db) {
                 try {
                     const doc = await db.collection("users").doc("mohamed_data").get();
@@ -236,28 +231,25 @@
                         renderTiers();
                     }
                 } catch (err) {
-                    console.log("جاري استخدام النسخة المحلية لحين توفر الإنترنت:", err);
+                    console.log("استخدام التخزين المحلي:", err);
                 }
             }
         }
 
-        // الحفظ المزدوج (Dual-Save System)
         function saveData() {
-            // 1. حفظ محلي
             localStorage.setItem('wird_today_minutes', totalMinutesToday);
             renderTiers();
             updateTimerDisplayFromTotal();
 
-            // 2. مزامنة سحابية مع Firestore
             if (db) {
                 db.collection("users").doc("mohamed_data").set({
                     totalMinutes: totalMinutesToday,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true }).catch(err => console.error("خطأ المزامنة السحابية:", err));
+                }, { merge: true }).catch(err => console.error("خطأ حفظ السحابة:", err));
             }
         }
 
-        // --- 4. فحص التحديثات الحقيقي ---
+        // --- 4. فحص التحديثات ---
         async function checkForUpdates() {
             const icon = document.getElementById('updateIcon');
             if (icon) icon.classList.add('animate-spin');
@@ -416,12 +408,30 @@
             setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
 
-        // --- 8. تسجيل خروج أنيق ---
+        // --- 8. عملية تسجيل الخروج الحقيقية والمعدلة ---
         function logout() {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().signOut().catch(() => {});
+            // 1. إيقاف العداد فوراً إذا كان يعمل
+            if (isTimerRunning) {
+                isTimerRunning = false;
+                clearInterval(timerInterval);
             }
-            showToast("🚪 تم تسجيل الخروج بنجاح");
+
+            // 2. تسجيل الخروج السحابي
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().signOut().catch(err => console.error(err));
+            }
+
+            // 3. تنظيف البيانات والذاكرة المحلية
+            localStorage.removeItem('wird_today_minutes');
+            totalMinutesToday = 0;
+            timerSeconds = 0;
+
+            // 4. إظهار الإشعار وإعادة تحميل الواجهة بسلاسة
+            showToast("🚪 تم تسجيل الخروج بنجاح..");
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
     </script>
 </body>
