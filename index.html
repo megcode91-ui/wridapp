@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق وِرد - النسخة 8 (مربوط بالخادم)</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- خطوط عربية (Cairo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / الشريط العلوي -->
+    <header class="bg-gradient-to-r from-emerald-900 via-teal-800 to-slate-900 text-white shadow-md p-4 sticky top-0 z-40">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-lg"></i> وِرد <span class="text-xs bg-emerald-600/60 px-2 py-0.5 rounded-full font-normal">v8 (سحابي)</span>
+                </h1>
+                <p id="hijri-date" class="text-xs text-emerald-100/80 mt-0.5">جاري جلب التقويم القمري...</p>
+            </div>
+            <div class="text-left flex items-center gap-2">
+                <span id="cloud-status" class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-md flex items-center gap-1">
+                    <i class="fa-solid fa-cloud animate-pulse"></i> متصل
+                </span>
+                <span id="current-time-clock" class="text-xs font-mono bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 block">00:00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto w-full p-4 flex-1 space-y-6">
+
+        <!-- 1. بطاقة حصيلة اليوم عند الساعة 23:00 -->
+        <section id="daily-summary-card" class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-2 border-emerald-500/30 rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
+            <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
+                    <h2 class="font-black text-slate-800 text-sm">حصيلة الذكر اليومية (تمام 23:00)</h2>
+                </div>
+                <span id="countdown-23" class="text-xs font-mono font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300">
+                    جاري الحساب...
+                </span>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+                <div>
+                    <span class="text-xs text-slate-500 block mb-0.5">درجة اليوم الحالية:</span>
+                    <h3 id="today-grade-title" class="text-2xl font-black text-emerald-800 flex items-center gap-2">
+                        <!-- اسم الدرجة اليومية -->
+                    </h3>
+                    <p id="today-grade-desc" class="text-xs text-slate-600 mt-1">مجموع خلوة الذكر اليوم: <span id="today-total-time" class="font-bold text-slate-800">0 دقيقة</span></p>
+                </div>
+                <div id="today-grade-badge" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner bg-slate-100 text-slate-400">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. قسم مُؤقّت خلوة الذكر (Pomodoro Dhikr) -->
+        <section class="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-5 border border-emerald-700/30">
+            <div class="flex justify-between items-center border-b border-emerald-700/50 pb-3">
+                <h2 class="font-extrabold text-base flex items-center gap-2 text-emerald-200">
+                    <i class="fa-solid fa-hourglass-half text-emerald-400"></i> خلوة الذكر (Pomodoro)
+                </h2>
+                <span id="pomo-status-tag" class="text-xs bg-emerald-800/80 text-emerald-200 px-3 py-1 rounded-full border border-emerald-600/40">
+                    جاهز للبدء
+                </span>
+            </div>
+
+            <!-- عداد الوقت الرقمي -->
+            <div class="text-center py-2">
+                <div id="pomo-display" class="text-6xl font-black font-mono tracking-wider text-emerald-300 drop-shadow-md">
+                    15:00
+                </div>
+                <p class="text-xs text-emerald-200/70 mt-2">تفرّغ للذكر والاستغفار والمناجاة بعيداً عن المشتتات</p>
+            </div>
+
+            <!-- خيارات الأوقات الافتراضية -->
+            <div class="flex justify-center gap-1.5 text-xs font-bold flex-wrap">
+                <button onclick="window.setPomodoroTime(1)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">1 د</button>
+                <button onclick="window.setPomodoroTime(3)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">3 د</button>
+                <button onclick="window.setPomodoroTime(5)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">5 د</button>
+                <button onclick="window.setPomodoroTime(10)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">10 د</button>
+                <button onclick="window.setPomodoroTime(15)" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 transition">15 د</button>
+                <button onclick="window.setPomodoroTime(30)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">30 د</button>
+                <button onclick="window.setPomodoroTime(60)" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">60 د</button>
+                <button onclick="window.promptCustomPomodoro()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-emerald-300">+ مخصص</button>
+            </div>
+
+            <!-- أزرار التحكم -->
+            <div class="flex justify-center gap-3 pt-2">
+                <button id="pomo-start-btn" onclick="window.togglePomodoro()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-2.5 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> ابدأ الخلوة
+                </button>
+                <button onclick="window.resetPomodoro()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-2xl transition">
+                    <i class="fa-solid fa-rotate-right"></i> إعادة ضبط
+                </button>
+                <button onclick="window.promptManualLog()" title="تسجيل خلوة سابقة يدوياً" class="bg-white/10 hover:bg-white/20 text-emerald-300 font-bold px-3 py-2.5 rounded-2xl transition">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. معدل جميع الأيام والإحصائيات -->
+        <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3 border-slate-100">
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-600"></i> درجة معدل جميع الأيام
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">تقييم مقامك التراكمي بناءً على متوسط خلوة الذكر اليومية</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-500 block">المعدل العام لجميع الأيام:</span>
+                    <h4 id="avg-grade-title" class="text-xl font-black text-indigo-900 mt-0.5">جاري الحساب...</h4>
+                    <span id="avg-time-desc" class="text-xs text-slate-600 font-medium">متوسط: 0 دقيقة / يوم</span>
+                </div>
+                <div id="avg-grade-badge" class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-indigo-100 text-indigo-700">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+            </div>
+
+            <!-- بطاقات الفترات التاريخية -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
+                    <span class="block font-semibold text-emerald-800 mb-1">آخر 24 ساعة</span>
+                    <span id="stat-24h" class="text-sm font-black text-emerald-700">0 دقيقة</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-teal-50 border border-teal-100">
+                    <span class="block font-semibold text-teal-800 mb-1">آخر 7 أيام</span>
+                    <span id="stat-7d" class="text-sm font-black text-teal-700">0 دقيقة</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-indigo-50 border border-indigo-100">
+                    <span class="block font-semibold text-indigo-800 mb-1">آخر 30 يوماً</span>
+                    <span id="stat-30d" class="text-sm font-black text-indigo-700">0 دقيقة</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-purple-50 border border-purple-100">
+                    <span class="block font-semibold text-purple-800 mb-1">إجمالي الخلوة</span>
+                    <span id="stat-total" class="text-sm font-black text-purple-700">0 دقيقة</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. جدول سلم المراتب والدرجات الإيمانية -->
+        <section class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-3">
+            <h3 class="font-extrabold text-slate-800 text-sm flex items-center gap-2 border-b pb-3 border-slate-100">
+                <i class="fa-solid fa-layer-group text-amber-600"></i> سلم مراتب ودرجات الذكر
+            </h3>
+            <p class="text-xs text-slate-500">التدرج الزمني اليومي للانتقال بين المقامات والدرجات:</p>
+
+            <div id="grades-list" class="space-y-2 text-xs pt-1">
+                <!-- سيتم إدراج درجات السلم ديناميكياً -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white mt-6">
+        تطبيق وِرد &copy; <span id="year"></span> - نظام مراتب ودرجات خلوة الذكر (Firebase Enabled)
+    </footer>
+
+    <!-- Firebase SDK & Application Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // إعدادات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOstJoI5KKmBWFp8XoTahkZ1RJ_ggD0tY",
+            authDomain: "wird-7cfbe.firebaseapp.com",
+            projectId: "wird-7cfbe",
+            storageBucket: "wird-7cfbe.firebasestorage.app",
+            messagingSenderId: "1037841919563",
+            appId: "1:1037841919563:web:98f2fcf039f3e7796967ce",
+            measurementId: "G-NTQBWC1WLW"
+        };
+
+        // تهيئة Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // 1. مصفوفة الدرجات والمراتب
+        const GRADES_LADDER = [
+            { key: 'ghafil', title: 'الغافل', minMin: 0, maxMin: 0, desc: '0 دقيقة', icon: 'fa-moon', color: 'text-slate-500', bg: 'bg-slate-100', border: 'border-slate-300' },
+            { key: 'mustayqiz', title: 'المُستيقظ', minMin: 1, maxMin: 10, desc: '1 إلى 10 دقائق', icon: 'fa-sun', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300' },
+            { key: 'zaakir', title: 'الذاكر', minMin: 11, maxMin: 30, desc: '10 إلى 30 دقيقة', icon: 'fa-leaf', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-300' },
+            { key: 'haadir', title: 'الحاضر', minMin: 31, maxMin: 60, desc: '30 دقيقة إلى ساعة', icon: 'fa-heart', color: 'text-teal-700', bg: 'bg-teal-50', border: 'border-teal-300' },
+            { key: 'mudawim', title: 'المداوم', minMin: 61, maxMin: 180, desc: '1 إلى 3 ساعات', icon: 'fa-clock', color: 'text-cyan-700', bg: 'bg-cyan-50', border: 'border-cyan-300' },
+            { key: 'mushahid', title: 'المُشاهد', minMin: 181, maxMin: 360, desc: '3 إلى 6 ساعات', icon: 'fa-eye', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-300' },
+            { key: 'munqati', title: 'المُنْقَطِع', minMin: 361, maxMin: 720, desc: '6 إلى 12 ساعة', icon: 'fa-mountain', color: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-300' },
+            { key: 'faani', title: 'الفاني', minMin: 721, maxMin: 960, desc: '12 إلى 16 ساعة', icon: 'fa-fire', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-300' },
+            { key: 'baaqi', title: 'الباقي', minMin: 961, maxMin: 1439, desc: 'كل ساعات اليقظة', icon: 'fa-infinity', color: 'text-fuchsia-700', bg: 'bg-fuchsia-50', border: 'border-fuchsia-300' },
+            { key: 'aalim', title: 'العالِم', minMin: 1440, maxMin: Infinity, desc: 'دوام متصل (القلب لا يغفل حتى في النوم)', icon: 'fa-crown', color: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-300' }
+        ];
+
+        let pomodoroLogs = JSON.parse(localStorage.getItem('pomo_logs_v8')) || [];
+
+        let pomoDurationMinutes = 15;
+        let pomoTimeLeftSeconds = 15 * 60;
+        let pomoTimerInterval = null;
+        let isPomoRunning = false;
+
+        // 2. الربط بالسيرفر والحفظ اللحظي
+        function syncWithFirestore() {
+            const q = query(collection(db, "dhikr_sessions"), orderBy("timestamp", "asc"));
+            onSnapshot(q, (snapshot) => {
+                const cloudLogs = [];
+                snapshot.forEach((doc) => {
+                    cloudLogs.push(doc.data());
+                });
+                if (cloudLogs.length > 0) {
+                    pomodoroLogs = cloudLogs;
+                    localStorage.setItem('pomo_logs_v8', JSON.stringify(pomodoroLogs));
+                    updateAllDashboard();
+                }
+            }, (error) => {
+                console.warn("تعذر الاتصال بالسيرفر، يعمل الآن بالوضع المحلي:", error);
+            });
+        }
+
+        async function saveSessionToCloud(duration) {
+            const logItem = {
+                durationMinutes: duration,
+                timestamp: Date.now()
+            };
+
+            // حفظ محلي فوري
+            pomodoroLogs.push(logItem);
+            localStorage.setItem('pomo_logs_v8', JSON.stringify(pomodoroLogs));
+            updateAllDashboard();
+
+            // إرسال للسيرفر
+            try {
+                await addDoc(collection(db, "dhikr_sessions"), logItem);
+            } catch (e) {
+                console.error("خطأ في حفظ الجلسة على السيرفر: ", e);
+            }
+        }
+
+        function getGradeObj(minutes) {
+            if (minutes <= 0) return GRADES_LADDER[0];
+            for (let i = GRADES_LADDER.length - 1; i >= 0; i--) {
+                if (minutes >= GRADES_LADDER[i].minMin) {
+                    return GRADES_LADDER[i];
+                }
+            }
+            return GRADES_LADDER[0];
+        }
+
+        function initClocks() {
+            const options = { calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric' };
+            const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', options);
+            document.getElementById('hijri-date').innerText = formatter.format(new Date());
+            document.getElementById('year').innerText = new Date().getFullYear();
+
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('current-time-clock').innerText = now.toLocaleTimeString('ar-SA');
+
+                const target23 = new Date();
+                target23.setHours(23, 0, 0, 0);
+
+                const countdownEl = document.getElementById('countdown-23');
+                if (now < target23) {
+                    const diffMs = target23 - now;
+                    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    const diffSecs = Math.floor((diffMs % (1000 * 60)) / 1000);
+                    countdownEl.innerText = `متبقي على التقييم: ${diffHrs}س ${diffMins}د ${diffSecs}ث`;
+                } else {
+                    countdownEl.innerText = `تم اعتماد حصيلة اليوم (الساعة 23:00)`;
+                }
+            }, 1000);
+        }
+
+        function updatePomoDisplay() {
+            const mins = Math.floor(pomoTimeLeftSeconds / 60);
+            const secs = pomoTimeLeftSeconds % 60;
+            document.getElementById('pomo-display').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        window.setPomodoroTime = function(minutes) {
+            if (isPomoRunning) window.resetPomodoro();
+            pomoDurationMinutes = minutes;
+            pomoTimeLeftSeconds = minutes * 60;
+            updatePomoDisplay();
+        };
+
+        window.promptCustomPomodoro = function() {
+            const custom = prompt("أدخل مدة خلوة الذكر بالدقائق:", "20");
+            if (custom && !isNaN(custom) && parseInt(custom) > 0) {
+                window.setPomodoroTime(parseInt(custom));
+            }
+        };
+
+        window.promptManualLog = function() {
+            const custom = prompt("تسجيل خلوة سابقة يدوياً (بالدقائق):", "15");
+            if (custom && !isNaN(custom) && parseInt(custom) > 0) {
+                const mins = parseInt(custom);
+                saveSessionToCloud(mins);
+                alert(`تم تسجيل ${mins} دقيقة خلوة وحفظها سحابياً بنجاح.`);
+            }
+        };
+
+        window.togglePomodoro = function() {
+            const startBtn = document.getElementById('pomo-start-btn');
+            const statusTag = document.getElementById('pomo-status-tag');
+
+            if (isPomoRunning) {
+                clearInterval(pomoTimerInterval);
+                isPomoRunning = false;
+                startBtn.innerHTML = `<i class="fa-solid fa-play"></i> استئناف الخلوة`;
+                statusTag.innerText = "متوقف مؤقتاً";
+                statusTag.className = "text-xs bg-amber-800/80 text-amber-200 px-3 py-1 rounded-full border border-amber-600/40";
+            } else {
+                isPomoRunning = true;
+                startBtn.innerHTML = `<i class="fa-solid fa-pause"></i> إيقاف مؤقت`;
+                statusTag.innerText = "في خلوة الذكر الآن 🌿";
+                statusTag.className = "text-xs bg-emerald-600 text-white px-3 py-1 rounded-full animate-pulse";
+
+                pomoTimerInterval = setInterval(() => {
+                    if (pomoTimeLeftSeconds > 0) {
+                        pomoTimeLeftSeconds--;
+                        updatePomoDisplay();
+                    } else {
+                        completePomodoroSession();
+                    }
+                }, 1000);
+            }
+        };
+
+        window.resetPomodoro = function() {
+            clearInterval(pomoTimerInterval);
+            isPomoRunning = false;
+            pomoTimeLeftSeconds = pomoDurationMinutes * 60;
+            updatePomoDisplay();
+
+            document.getElementById('pomo-start-btn').innerHTML = `<i class="fa-solid fa-play"></i> ابدأ الخلوة`;
+            const statusTag = document.getElementById('pomo-status-tag');
+            statusTag.innerText = "جاهز للبدء";
+            statusTag.className = "text-xs bg-emerald-800/80 text-emerald-200 px-3 py-1 rounded-full border border-emerald-600/40";
+        };
+
+        function completePomodoroSession() {
+            clearInterval(pomoTimerInterval);
+            isPomoRunning = false;
+            
+            saveSessionToCloud(pomoDurationMinutes);
+            playCompletionBeep();
+            alert(`تقبل الله! أتممت خلوة ذكر لمدة ${pomoDurationMinutes} دقيقة 🎉`);
+            
+            window.resetPomodoro();
+        }
+
+        function playCompletionBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.6);
+            } catch (e) {}
+        }
+
+        function getMinutesInPeriod(periodKey) {
+            const now = Date.now();
+            if (periodKey === 'today') {
+                const startOfToday = new Date();
+                startOfToday.setHours(0,0,0,0);
+                return pomodoroLogs.filter(l => l.timestamp >= startOfToday.getTime())
+                                   .reduce((a, b) => a + b.durationMinutes, 0);
+            } else if (periodKey === '24h') {
+                return pomodoroLogs.filter(l => l.timestamp >= (now - 24 * 60 * 60 * 1000))
+                                   .reduce((a, b) => a + b.durationMinutes, 0);
+            } else if (periodKey === '7d') {
+                return pomodoroLogs.filter(l => l.timestamp >= (now - 7 * 24 * 60 * 60 * 1000))
+                                   .reduce((a, b) => a + b.durationMinutes, 0);
+            } else if (periodKey === '30d') {
+                return pomodoroLogs.filter(l => l.timestamp >= (now - 30 * 24 * 60 * 60 * 1000))
+                                   .reduce((a, b) => a + b.durationMinutes, 0);
+            } else if (periodKey === 'total') {
+                return pomodoroLogs.reduce((a, b) => a + b.durationMinutes, 0);
+            }
+            return 0;
+        }
+
+        function calculateOverallDailyAverage() {
+            if (pomodoroLogs.length === 0) return 0;
+            
+            const daysMap = {};
+            pomodoroLogs.forEach(log => {
+                const d = new Date(log.timestamp);
+                const dateStr = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+                daysMap[dateStr] = (daysMap[dateStr] || 0) + log.durationMinutes;
+            });
+
+            const uniqueDaysCount = Object.keys(daysMap).length;
+            if (uniqueDaysCount === 0) return 0;
+
+            const totalMinutes = Object.values(daysMap).reduce((a, b) => a + b, 0);
+            return Math.round(totalMinutes / uniqueDaysCount);
+        }
+
+        function formatDuration(totalMinutes) {
+            if (totalMinutes < 60) return `${totalMinutes} دقيقة`;
+            const hrs = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            return mins > 0 ? `${hrs} س و ${mins} د` : `${hrs} ساعة`;
+        }
+
+        function updateAllDashboard() {
+            const todayMins = getMinutesInPeriod('today');
+            const todayGrade = getGradeObj(todayMins);
+
+            document.getElementById('today-grade-title').innerHTML = `
+                <i class="fa-solid ${todayGrade.icon} ${todayGrade.color}"></i> ${todayGrade.title}
+            `;
+            document.getElementById('today-grade-desc').innerHTML = `مجموع خلوة الذكر اليوم: <span class="font-bold text-slate-800">${formatDuration(todayMins)}</span>`;
+            
+            const todayBadge = document.getElementById('today-grade-badge');
+            todayBadge.className = `w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-sm border ${todayGrade.bg} ${todayGrade.color} ${todayGrade.border}`;
+            todayBadge.innerHTML = `<i class="fa-solid ${todayGrade.icon}"></i>`;
+
+            const avgMins = calculateOverallDailyAverage();
+            const avgGrade = getGradeObj(avgMins);
+
+            document.getElementById('avg-grade-title').innerHTML = `<i class="fa-solid ${avgGrade.icon} ${avgGrade.color}"></i> ${avgGrade.title}`;
+            document.getElementById('avg-time-desc').innerText = `متوسط خلوتك اليومي: ${formatDuration(avgMins)} / يوم`;
+
+            const avgBadge = document.getElementById('avg-grade-badge');
+            avgBadge.className = `w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${avgGrade.bg} ${avgGrade.color} ${avgGrade.border} border`;
+            avgBadge.innerHTML = `<i class="fa-solid ${avgGrade.icon}"></i>`;
+
+            document.getElementById('stat-24h').innerText = formatDuration(getMinutesInPeriod('24h'));
+            document.getElementById('stat-7d').innerText = formatDuration(getMinutesInPeriod('7d'));
+            document.getElementById('stat-30d').innerText = formatDuration(getMinutesInPeriod('30d'));
+            document.getElementById('stat-total').innerText = formatDuration(getMinutesInPeriod('total'));
+
+            renderGradesLadder(todayGrade.key);
+        }
+
+        function renderGradesLadder(activeKey) {
+            const container = document.getElementById('grades-list');
+            container.innerHTML = '';
+
+            GRADES_LADDER.forEach((g) => {
+                const isActive = g.key === activeKey;
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3 rounded-2xl border transition ${isActive ? `${g.bg} ${g.border} border-2 shadow-sm scale-[1.01]` : 'bg-slate-50 border-slate-200/70 text-slate-600'}`;
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-base ${g.bg} ${g.color}">
+                            <i class="fa-solid ${g.icon}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold ${isActive ? 'text-slate-900 text-sm' : 'text-slate-700'}">${g.title} ${isActive ? '<span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full mr-1">مرتبتك اليوم</span>' : ''}</h4>
+                            <span class="text-[11px] text-slate-500">${g.desc}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // تشغيل التهيئة عند تحميل الصفحة
+        window.onload = () => {
+            initClocks();
+            updatePomoDisplay();
+            updateAllDashboard();
+            syncWithFirestore();
+        };
+    </script>
+</body>
+</html>
